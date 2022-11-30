@@ -163,3 +163,72 @@ Persistence can be achieved through:
 In this phase, the attacker can also use the **[Timestomping](https://attack.mitre.org/techniques/T1070/006/)** technique to avoid detection by the forensic investigator and also to make the malware appear as a part of a legitimate program. The Timestomping technique lets an attacker modify the file's timestamps, including the modify, access, create and change times.
 
 ### _**Command & Control**_
+The compromised endpoint would communicate with an external server set up by an attacker to establish a command & control channel. After establishing the connection,  the attacker has full control of the victim's machine. Until recently, IRC (Internet Relay Chat) was the traditional C2 channel used by attackers. This is no longer the case, as modern security solutions can easily detect malicious IRC traffic.
+
+Most common C2 channels used by adversaries currently:
+- The protocols HTTP on port 80 and HTTPS on port 443 - this type of beaconing blends the malicious traffic with the legitimate traffic and can help the attacker evade firewalls.   
+- DNS (Domain Name Server). The infected machine makes constant DNS requests to the DNS server that belongs to an attacker, this type of C2 communication is also known as DNS Tunneling.
+
+### _**Actions on Objectives (Exfiltration)**_
+The attacker can finally achieve his goals, which means taking action on the original objectives. With hands-on keyboard access, the attacker can achieve the following: 
+- Collect credentials from users.
+- Perform privilege escalation (gaining elevated access like domain administrator access from a workstation by exploiting a misconfiguration).
+- Internal reconnaissance (for example, an attacker gets to interact with internal software to find its vulnerabilities).
+- Lateral movement through the company's environment.
+- Collect and exfiltrate sensitive data.
+- Deletion of backups and shadow copies. Shadow Copy is a Microsoft technology that can create backup copies, snapshots of computer files, or volumes. 
+- Overwrite or corrupt data.
+
+### _**Practice Analysis**_
+- powershell
+- spearphishing attachment
+- exploit public-facing application
+- dynamic linker hijacking
+- fallback channels
+- data from local system
+
+### _**Conclusion**_
+Cyber Kill Chain can be a great tool to improve network defence. Is it perfect and can it be the only tool to rely on? No. 
+
+Since the main focus of the framework is on malware delivery and network security, the traditional Cyber Kill Chain will not be able to identify **Insider Threats**. According to [CISA](https://www.cisa.gov/defining-insider-threats), _"The Insider Threat is the potential for an insider to use their authorized access or understanding of an organization to harm that organization."_
+
+We recommend not only relying on the traditional Cyber Kill Chain model but also referring to [MITRE ATT&CK](https://attack.mitre.org/) as well as [Unified Kill Chain](https://unifiedkillchain.com/) to apply a more comprehensive approach to your defence methodologies.
+
+## **--Unified Kill Chain--**
+
+### _**Introduction**_
+**Learning Objectives:**
+- Understanding why frameworks such as the UKC are important and helpful in establishing a good cybersecurity posture
+- Using the UKC to understand an attacker's motivation, methodologies and tactics
+- Understanding the various phases of the UKC
+- Discover that the UKC is a framework that is used to complement other frameworks such as MITRE.
+
+### _**What is a "Kill Chain"**_
+Originating from the military, a “Kill Chain” is a term used to explain the various stages of an attack. In the realm of cybersecurity, a “Kill Chain” is used to describe the methodology/path attackers such as hackers or APTs use to approach and intrude a target.
+
+For example, an attacker scanning, exploiting a web vulnerability, and escalating privileges will be a “Kill Chain”. 
+
+### _**What is "Threat Modelling"**_
+Threat modelling, in a cybersecurity context, is a series of steps to ultimately improve the security of a system. Threat modelling is about identifying risk and essentially boils down to:
+
+1. Identifying what systems and applications need to be secured and what function they serve in the environment. For example, is the system critical to normal operations, and is a system holding sensitive information like payment info or addresses?
+2. Assessing what vulnerabilities and weaknesses these systems and applications may have and how they could be potentially exploited
+3. Creating a plan of action to secure these systems and applications from the vulnerabilities highlighted
+4. Putting in policies to prevent these vulnerabilities from occurring again where possible (for example, implementing a software development life cycle (SDLC) for an application or training employees on phishing awareness).
+
+STRIDE, DREAD and CVSS (to name a few) are all frameworks specifically used in threat modelling.
+
+### _**Introducing the Unified Kill Chain**_
+The [Unified Kill Chain](https://www.unifiedkillchain.com/assets/The-Unified-Kill-Chain.pdf) published in 2017, aims to complement (**not compete**) with other cybersecurity kill chain frameworks such as Lockheed Martin’s and MITRE’s ATT&CK.
+
+The UKC states that there are 18 phases to an attack: Everything from reconnaissance to data exfiltration and understanding an attacker's motive.
+
+![](2022-11-30-08-21-57.png)
+
+### _**Phase: In (Initial Foothold)**_
+The main focus of this series of phases is for an attacker to gain access to a system or networked environment.
+
+An attacker will employ numerous tactics to investigate the system for potential vulnerabilities that can be exploited to gain a foothold in the system. For example, a common tactic is the use of reconnaissance against a system to discover potential attack vectors (such as applications and services).
+
+![](2022-11-30-08-25-43.png)
+
