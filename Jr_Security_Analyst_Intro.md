@@ -232,3 +232,96 @@ An attacker will employ numerous tactics to investigate the system for potential
 
 ![](2022-11-30-08-25-43.png)
 
+### _**Phase: Through (Network Propagation)**_
+This phase follows a successful foothold being established on the target network. An attacker would seek to gain additional access and privileges to systems and data to fulfil their goals. The attacker would set up a base on one of the systems to act as their pivot point and use it to gather information about the internal network.
+
+![](2022-12-01-06-30-14.png)
+
+### _**Phase: Out (Action on Objectives)**_
+This phase wraps up the journey of an adversary’s attack on an environment, where they have critical asset access and can fulfil their attack goals. These goals are usually geared toward compromising the confidentiality, integrity and availability (CIA) triad.
+
+![](2022-12-01-06-49-24.png)
+
+### _**Practical**_
+
+### _**Conclusion**_
+
+## **--Diamond Model--**
+
+### _**Introduction**_
+The Diamond Model is composed of four core features: adversary, infrastructure, capability, and victim, and establishes the fundamental atomic element of any intrusion activity.
+
+### _**Adversary**_
+An adversary is an actor or organization responsible for utilizing a capability against the victim to achieve their intent. Adversary knowledge can generally be mysterious, and this core feature is likely to be empty for most events – at least at the time of discovery. 
+
+Adversary Operator is the “hacker” or person(s) conducting the intrusion activity.
+
+Adversary Customer is the entity that stands to benefit from the activity conducted in the intrusion.
+
+### _**Victim**_
+Victim – is a target of the adversary. A victim can be an organization, person, target email address, IP address, domain, etc. It's essential to understand the difference between the victim persona and the victim assets because they serve different analytic functions. 
+
+Victim Personae are the people and organizations being targeted and whose assets are being attacked and exploited. These can be organization names, people’s names, industries, job roles, interests, etc.
+
+Victim Assets are the attack surface and include the set of systems, networks, email addresses, hosts, IP addresses, social networking accounts, etc., to which the adversary will direct their capabilities
+
+### _**Capability**_
+Capability – is also known as the skill, tools, and techniques used by the adversary in the event. The capability highlights the adversary’s tactics, techniques, and procedures (TTPs). 
+
+An Adversary Arsenal is a set of capabilities that belong to an adversary. The combined capacities of an adversary's capabilities make it the adversary's arsenal.
+
+### _**Infrastructure**_
+Infrastructure – is also known as software or hardware. Infrastructure is the physical or logical interconnections that the adversary uses to deliver a capability or maintain control of capabilities.
+
+Type 1 Infrastructure is the infrastructure controlled or owned by the adversary. 
+
+Type 2 Infrastructure is the infrastructure controlled by an intermediary. Sometimes the intermediary might or might not be aware of it. This is the infrastructure that a victim will see as the adversary. Type 2 Infrastructure has the purpose of obfuscating the source and attribution of the activity. Type 2 Infrastructure includes malware staging servers, malicious domain names, compromised email accounts, etc.
+
+### _**Event Meta Features**_
+Six possible meta-features can be added to the Diamond Model. Meta-features are not required, but they can add some valuable information or intelligence to the Diamond Model.
+
+  
+
+- **Timestamp** \- is the date and time of the event. 
+- **Phase** \- these are the phases of an intrusion, attack, or breach. According to the Diamond Model creators and the Axiom 4, "Every malicious activity contains two or more phases which must be successfully executed in succession to achieve the desired result." Malicious activities don't occur in two or more events rather than just one.  
+    The phases can be:   
+    1. Reconnaissance  
+    2. Weaponization  
+    3. Delivery  
+    4. Exploitation  
+    5. Installation  
+    6. Command & Control  
+    7. Actions on Objective  
+    For example, an attacker needs to do some research to discover the target or a victim. Then they would try to exploit the target, establish a command-and-control centre and, lastly, exfiltrate the sensitive information. 
+- **Result** \- While the results and post-conditions of an adversary’s operations will not always be known or have a high confidence value when they are known, they are helpful to capture. It is crucial to capture the results and post-conditions of an adversary's operations, but sometimes they might not always be known. 
+- **Direction** \- This meta-feature helps describe host-based and network-based events and represents the direction of the intrusion attack. The Diamond Model of Intrusion Analysis defines seven potential values for this meta-feature: Victim-to-Infrastructure, Infrastructure-to-Victim, Infrastructure-to-Infrastructure, Adversary-to-Infrastructure, Infrastructure-to-Adversary, Bidirectional or Unknown.
+- **Methodology** \- This meta-feature will allow an analyst to describe the general classification of intrusion, for example, phishing, DDoS, breach, port scan, etc. 
+- **Resources** \- According to the Diamond Model, every intrusion event needs one or more external resources to be satisfied to succeed.
+
+### _**Social-Political Component**_
+The social-political component describes the needs and intent of the adversary, for example, financial gain, gaining acceptance in the hacker community, hacktivism, or espionage. 
+
+### _**Technology Component**_
+Technology – the technology meta-feature or component highlights the relationship between the core features: capability and infrastructure. The capability and infrastructure describe how the adversary operates and communicates. 
+
+### _**Practice Analysis**_
+(Please note: The case study for this room occurred in 2015, and is not in light of recent developments)
+
+### _**Conclusion**_
+The Diamond Model is a scientific method to improve the efficiency and accuracy of intrusion analysis. With this in your arsenal, you will have opportunities to leverage real-time intelligence for network defence and predict adversary operations.
+
+## **--MITRE--**
+
+### _**Introduction to MITRE**_
+Some people *might* only associate MITRE with CVEs ([**Common Vulnerabilities and Exposures**](https://cve.mitre.org/)) list, which is one resource you'll probably check when searching for an exploit for a given vulnerability. But MITRE researches in many areas, outside of cybersecurity, for the 'safety, stability, and well-being of our nation.'  These areas include artificial intelligence, health informatics, space security, to name a few.
+
+From [**Mitre.org**](https://www.mitre.org/about/corporate-overview): "_At MITRE, we solve problems for a safer world. Through our federally funded R&D centers and public-private partnerships, we work across government to tackle challenges to the safety, stability, and well-being of our nation._"
+
+In this room, we will focus on other projects/research that the US-based non-profit MITRE Corporation has created for the cybersecurity community, specifically:
+
+- ATT&CK_®_ (Adversarial Tactics, Techniques, and Common Knowledge) Framework
+- CAR (Cyber Analytics Repository) Knowledge Base
+- ENGAGE (sorry, not a fancy acronym)
+- D3FEND (Detection, Denial, and Disruption Framework Empowering Network Defense)
+- AEP (ATT&CK Emulation Plans)
+
