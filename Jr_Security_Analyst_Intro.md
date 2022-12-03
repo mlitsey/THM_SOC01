@@ -334,3 +334,17 @@ TTP is an acronym for Tactics, Techniques, and Procedures, but what does each o
 - The Technique is how the adversary achieves the goal or objective.
 - The Procedure is how the technique is executed.
 
+### _**ATT&CK® Framework**_
+"MITRE ATT&CK® is a globally-accessible knowledge base of adversary tactics and techniques based on real-world observations."
+
+Navigate to the ATT&CK® [website](https://attack.mitre.org/).
+
+### _**CAR Knowledge Base**_
+CAR is *"The MITRE Cyber Analytics Repository (CAR) is a knowledge base of analytics developed by MITRE based on the MITRE ATT&CK_® _adversary model. CAR defines a data model that is leveraged in its pseudocode representations but also includes implementations directly targeted at specific tools (e.g., Splunk, EQL) in its analytics. With respect to coverage, CAR is focused on providing a set of validated and well-explained analytics, in particular with regards to their operating theory and rationale."*
+
+Instead of further attempting to explain what CAR is, let's dive in. With our newly acquired knowledge from the previous section, we should feel comfortable and understand the information that CAR is providing to us.
+
+Let's begin our journey by reviewing [CAR-2020-09-001: Scheduled Task - File Access](https://car.mitre.org/analytics/CAR-2020-09-001/).
+
+Upon visiting the page, we're given a brief description of the analytic and references to ATT&CK (technique, sub-technique, and tactic).
+
