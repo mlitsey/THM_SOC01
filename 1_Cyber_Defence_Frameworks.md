@@ -348,3 +348,51 @@ Let's begin our journey by reviewing [CAR-2020-09-001: Scheduled Task - File Ac
 
 Upon visiting the page, we're given a brief description of the analytic and references to ATT&CK (technique, sub-technique, and tactic).
 
+### _**MITRE Engage**_
+[MITRE ENGAGE](https://engage.mitre.org/)
+
+Per the website, *"MITRE Engage is a framework for planning and discussing adversary engagement operations that empowers you to engage your adversaries and achieve your cybersecurity goals."*
+
+MITRE Engage is considered an Adversary Engagement Approach. This is accomplished by the implementation of Cyber Denial and Cyber Deception. 
+
+With Cyber Denial we prevent the adversary's ability to conduct their operations and with Cyber Deception we intentionally plant artifacts to mislead the adversary. 
+
+The Engage website provides a [starter kit](https://engage.mitre.org/starter-kit/) to get you 'started' with the Adversary Engagement Approach. The starter kit is a collection of whitepapers and PDFs explaining various checklists, methodologies, and processes to get you started. 
+
+As with MITRE ATT&CK, Engage has its own matrix.
+
+### _**MITRE D3FEND**_
+[D3FEND](https://d3fend.mitre.org/)
+
+What is this MITRE resource? Per the [D3FEND](https://d3fend.mitre.org/) website, this resource is *"A knowledge graph of cybersecurity countermeasures."*
+
+D3FEND is still in beta and is funded by the Cybersecurity Directorate of the NSA. 
+
+D3FEND stands for Detection, Denial, and Disruption Framework Empowering Network Defense. 
+
+At the time of this writing, there are 408 artifacts in the D3FEND matrix.
+
+### _**ATT&CK® Emulation Plans**_
+under [MITRE ENGENUITY](https://mitre-engenuity.org/), we have CTID, the Adversary Emulation Library, and ATT&CK® Emulation Plans.
+
+CTID
+
+MITRE formed an organization named The [Center of Threat-Informed Defense](https://mitre-engenuity.org/ctid/) (CTID). This organization consists of various companies and vendors from around the globe. Their objective is to conduct research on cyber threats and their TTPs and share this research to improve cyber defense for all. 
+
+Some of the companies and vendors who are participants of CTID:
+
+- AttackIQ (founder)
+- Verizon
+- Microsoft (founder)
+- Red Canary (founder)
+- Splunk
+
+Per the website, *"Together with Participant organizations, we cultivate solutions for a safer world and advance threat-informed defense with open-source software, methodologies, and frameworks. By expanding upon the MITRE ATT&CK knowledge base, our work expands the global understanding of cyber adversaries and their tradecraft with the public release of data sets critical to better understanding adversarial behavior and their movements."*
+
+Adversary Emulation Library & ATT&CK® Emulations Plans
+
+The [Adversary Emulation Library](https://medium.com/mitre-engenuity/introducing-the-all-new-adversary-emulation-plan-library-234b1d543f6b) is a public library making adversary emulation plans a free resource for blue/red teamers. The library and the emulations are a contribution from CTID. There are several [ATT&CK® Emulation Plans](https://github.com/center-for-threat-informed-defense/adversary_emulation_library) currently available: [APT3](https://attack.mitre.org/resources/adversary-emulation-plans/), [APT29](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/apt29), and [FIN6](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/fin6). The emulation plans are a step-by-step guide on how to mimic the specific threat group. If any of the C-Suite were to ask, "how would we fare if APT29 hits us?" This can easily be answered by referring to the results of the execution of the emulation plan.
+
+### _**ATT&CK® and Threat Intelligence**_
+**Threat Intelligence (TI)** or **Cyber Threat Intelligence (CTI)** is the information, or TTPs, attributed to the adversary. By using threat intelligence, as defenders, we can make better decisions regarding the defensive strategy. Large corporations might have an in-house team whose primary objective is to gather threat intelligence for other teams within the organization, aside from using threat intel already readily available. Some of this threat intel can be open source or through a subscription with a vendor, such as [**CrowdStrike**](https://www.crowdstrike.com/). In contrast, many defenders wear multiple hats (roles) within some organizations, and they need to take time from their other tasks to focus on threat intelligence. To cater to the latter, we'll work on a scenario of using ATT&CK® for threat intelligence. The goal of threat intelligence is to make the information actionable.
+
