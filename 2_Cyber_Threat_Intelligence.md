@@ -233,6 +233,21 @@ We can further perform lookups and flag indicators as malicious from these optio
 
 Above the Plaintext section, we have a Resolve checkmark. Here, we get to perform the resolution of our analysis by classifying the email, setting up flagged artefacts and setting the classification codes. Once the email has been classified, the details will appear on the Resolution tab on the analysis of the email.
 
+What organisation is the attacker trying to pose as in the email?
+- linkedin
+
+What is the senders email address?
+- darkabutla@sc500.whpservers.com
+
+What is the recipient's email address?
+- cabbagecare@hotsmail.com
+
+What is the Originating IP address? Defang the IP address.
+- 204[.]93[.]183[.]11
+
+How many hops did the email go through to get to the recipient?
+- 4
+
 ### _**Cisco Talos Intelligence**_
 IT and Cybersecurity companies collect massive amounts of information that could be used for threat analysis and intelligence. Being one of those companies, Cisco assembled a large team of security practitioners called Cisco Talos to provide actionable intelligence, visibility on indicators, and protection against emerging threats through data collected from their products. The solution is accessible as [Talos Intelligence](https://talosintelligence.com/).
 
@@ -254,4 +269,38 @@ At the top, we have several tabs that provide different types of intelligence re
 
 - **Vulnerability Information:** Disclosed and zero-day vulnerability reports marked with CVE numbers and CVSS scores. Details of the vulnerabilities reported are provided when you select a specific report, including the timeline taken to get the report published. Microsoft vulnerability advisories are also provided, with the applicable snort rules that can be used.
 - **Reputation Center:** Provides access to searchable threat data related to IPs and files using their SHA256 hashes. Analysts would rely on these options to conduct their investigations. Additional email and spam data can be found under the **Email & Spam Data tab**.
+
+What is the listed domain of the IP address from the previous task?
+- scnet.net
+
+What is the customer name of the IP address?
+- Complete Web Reviews
+
+### _**Scenario 1**_
+According to Email2.eml, what is the recipient's email address?
+- chris.lyons@supercarcenterdetroit.com
+- found with phishtool
+
+From Talos Intelligence, the attached file can also be identified by the Detection Alias that starts with an H...
+- HIDDENEXT/Worm.Gen
+- found with talos using sha256 hash on attachment
+- 435BFC4C3A3C887FD39C058E8C11863D5DD1F05E0C7A86E232C93D0E979FDB28
+
+### _**Scenario 2**_
+What is the name of the attachment on Email3.eml?
+- Sales_Receipt 5606.xls
+- found with phishtool
+
+What malware family is associated with the attachment on Email3.eml?
+- dridex
+- found with malwarebazaar
+- sha256:b8ef959a9176aef07fdca8705254a163b50b49a17217a4ff0107487f59d4a35d
+
+### _**Conclusion**_
+n/a
+
+## **--Yara--**
+
+### _**Introduction**_
+This room will expect you to understand basic Linux familiarity, such as installing software and commands for general navigation of the system. Moreso, this room isn't designed to test your knowledge or for point-scoring. It is here to encourage you to follow along and experiment with what you have learned here.
 
