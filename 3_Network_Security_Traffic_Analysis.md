@@ -223,3 +223,218 @@ Note that you can use the parameters both in combined and separated form as foll
 
 Make sure you understand and practice each parameter with different types of traffic and discover your favourite combination.
 
+### _**Operation Mode 2: Packet Logger Mode**_
+Let's run Snort in Logger Mode  
+
+You can use Snort as a sniffer and log the sniffed packets via logger mode. You only need to use the packet logger mode parameters, and Snort does the rest to accomplish this.
+
+Packet logger parameters are explained in the table below;
+![](2022-12-15-06-47-29.png)
+
+Let's start using each parameter and see the difference between them. Snort needs active traffic on your interface, so we need to generate traffic to see Snort in action.  
+
+**  
+Logfile Ownership**
+
+Before generating logs and investigating them, we must remember the Linux file ownership and permissions. No need to deep dive into user types and permissions. The fundamental file ownership rule; **whoever creates a file becomes the owner of the corresponding file**.  
+
+Snort needs superuser (root) rights to sniff the traffic, so once you run the snort with the "sudo" command, the "root" account will own the generated log files. Therefore you will need "root" rights to investigate the log files. There are two different approaches to investigate the generated log files;  
+  
+
+- Elevation of privileges **-** You can elevate your privileges to examine the files. You can use the "sudo" command to execute your command as a superuser with the following command `sudo command`. You can also elevate the session privileges and switch to the superuser account to examine the generated log files with the following command: `sudo su`
+
+- Changing the ownership of files/directories - You can also change the ownership of the file/folder to read it as your user: `sudo chown username file` or `sudo chown username -R directory` The "-R" parameter helps recursively process the files and directories.
+
+  
+Logging with parameter "-l"  
+
+First, start the Snort instance in packet logger mode; `sudo snort -dev -l .`
+
+Now start ICMP/HTTP traffic with the traffic-generator script.  
+
+Once the traffic is generated, Snort will start showing the packets and log them in the target directory. You can configure the default output directory in snort.config file. However, you can use the "-l" parameter to set a target directory. Identifying the default log directory is useful for continuous monitoring operations, and the "-l" parameter is much more useful for testing purposes.
+
+The `-l .` part of the command creates the logs in the current directory. You will need to use this option to have the logs for each exercise in their folder.
+
+`sudo snort -dev -l .`
+
+Now, let's check the generated log file. Note that the log file names will be different in your case.
+
+`ls .`
+
+As you can see, it is a single all-in-one log file. It is a binary/tcpdump format log. This is what it looks like in the folder view.
+
+Logging with parameter "-K ASCII"  
+
+Start the Snort instance in packet logger mode; `sudo snort -dev -K ASCII`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, Snort will start showing the  packets in verbosity mode as follows;
+
+`sudo snort -dev -K ASCII -l .`
+
+Now, let's check the generated log file.
+
+`ls .`
+
+The logs created with "-K ASCII" parameter is entirely different. There are two folders with IP address names. Let's look into them.
+
+`ls ./<IP>`
+
+Once we look closer at the created folders, we can see that the logs are in ASCII and categorised format, so it is possible to read them without using a Snort instance.
+
+In a nutshell, ASCII mode provides multiple files in human-readable format, so it is possible to read the logs easily by using a text editor. By contrast with ASCII format, binary format is not human-readable and requires analysis using Snort or an application like tcpdump.
+
+Let's compare the ASCII format with the binary format by opening both of them in a text editor. The difference between the binary log file and the ASCII log file is shown below. (Left side: binary format. Right side: ASCII format).
+![](2022-12-15-06-51-24.png)
+
+Reading generated logs with parameter "-r"  
+
+Start the Snort instance in packet reader mode; `sudo snort -r`
+
+`sudo snort -r snort.log.<number>`
+
+**Note that** Snort can read and handle the binary like output (tcpdump and Wireshark also can handle this log format). However, if you create logs with "-K ASCII" parameter, Snort will not read them. As you can see in the above output, Snort read and displayed the log file just like in the sniffer mode.
+
+Opening log file with tcpdump.
+
+`sudo tcpdump -r snort.log.<number> -ntc 10`
+
+"-r" parameter also allows users to filter the binary log files. **You can filter the processed log to see specific packets with the "-r" parameter and Berkeley Packet Filters (BPF).** 
+
+- `sudo snort -r logname.log -X`
+- `sudo snort -r logname.log icmp`
+- `sudo snort -r logname.log tcp`
+- `sudo snort -r logname.log 'udp and port 53'`
+
+The output will be the same as the above, but only packets with the chosen protocol will be shown. Additionally, you can specify the number of processes with the parameter "-n". **The following command will process only the first 10 packets:** `snort -dvr logname.log -n 10`
+
+Please use the following resources to understand how the BPF works and its use.  
+
+- [https://en.wikipedia.org/wiki/Berkeley\_Packet\_Filter](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter)
+- [https://biot.com/capstats/bpf.html](https://biot.com/capstats/bpf.html)
+- [https://www.tcpdump.org/manpages/tcpdump.1.html](https://www.tcpdump.org/manpages/tcpdump.1.html)
+
+### _**Operation Mode 3: IDS/IPS**_
+Snort in IDS/IPS Mode
+
+Capabilities of Snort are not limited to sniffing and logging the traffic. IDS/IPS mode helps you manage the traffic according to user-defined rules.
+
+**Note that** (N)IDS/IPS mode depends on the rules and configuration. **TASK-10** summarises the essential paths, files and variables. Also, **TASK-3** covers configuration testing. Here, we need to understand the operating logic first, and then we will be going into rules in **TASK-9**.  
+
+  
+Let's run Snort in IDS/IPS Mode  
+
+NIDS mode parameters are explained in the table below;
+![](2022-12-15-07-26-43.png)
+
+Let's start using each parameter and see the difference between them. Snort needs active traffic on your interface, so we need to generate traffic to see Snort in action. To do this, use the traffic-generator script and sniff the traffic. 
+
+**Once you start running IDS/IPS mode,** you need to use rules. As we mentioned earlier, we will use a pre-defined ICMP rule as an example. The defined rule will only generate alerts in any direction of ICMP packet activity.
+
+`alert icmp any any <> any any  (msg: "ICMP Packet Found"; sid: 100001; rev:1;)`  
+
+This rule is located in "/etc/snort/rules/local.rules".  
+
+Remember, in this module, we will focus only on the operating modes. The rules are covered in TASK9&10. **Snort will create an "alert" file if the traffic flow triggers an alert.** **One last note;** once you start running IPS/IDS mode, the sniffing and logging mode will be semi-passive. However, you can activate the functions using the parameters discussed in previous tasks. **(-i, -v, -d, -e, -X, -l, -K ASCII)** If you don't remember the purpose of these commands, please revisit TASK4.
+
+  
+IDS/IPS mode with parameter "-c and -T"  
+
+Start the Snort instance and test the configuration file. `sudo snort -c /etc/snort/snort.conf -T` This command will check your configuration file and prompt it if there is any misconfiguratioın in your current setting. You should be familiar with this command if you covered TASK3. If you don't remember the output of this command, **please revisit TASK4**.
+
+  
+IDS/IPS mode with parameter "-N"
+
+Start the Snort instance and disable logging by running the following command: `sudo snort -c /etc/snort/snort.conf -N`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. This command will disable logging mode. The rest of the other functions will still be available (if activated).
+
+The command-line output will provide the information requested with the parameters. So, if you activate verbosity (-v) or full packet dump (-X) you will still have the output in the console, but there will be no logs in the log folder.  
+
+  
+IDS/IPS mode with parameter "-D"  
+
+Start the Snort instance in background mode with the following command: `sudo snort -c /etc/snort/snort.conf -D`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start processing the packets and accomplish the given task with additional parameters.
+
+The command-line output will provide the information requested with the parameters. So, if you activate **verbosity (-v)** or **full packet dump (-X)** with **packet logger mode (-l)** you will still have the logs in the logs folder, but there will be no output in the console.
+
+Once you start the background mode and want to check the corresponding process, you can easily use the "ps" command as shown below;
+
+`ps -ef | grep snort`
+
+If you want to stop the daemon, you can easily use the "kill" command to stop the process.
+
+`sudo kill -9 <process id>`
+
+Note that daemon mode is mainly used to automate the Snort. This parameter is mainly used in scripts to start the Snort service in the background. It is not recommended to use this mode unless you have a working knowledge of Snort and stable configuration.  
+
+  
+_IDS/IPS mode with parameter "-A"_
+
+**Remember that there are several alert modes available in snort;**  
+
+- console: Provides fast style alerts on the console screen.
+- cmg: Provides basic header details with payload in hex and text format.
+- **full:** Full alert mode, providing all possible information about the alert.  
+    
+- **fast:** Fast mode, shows the alert message, timestamp, source and destination ıp along with port numbers.
+- **none:** Disabling alerting.  
+    
+
+In this section, only the **"console"** and **"cmg"** parameters provide alert information in the console. It is impossible to identify the difference between the rest of the alert modes via terminal. Differences can be identified by looking at generated logs. 
+
+At the end of this section, we will compare the "full", "fast" and "none" modes. Remember that these parameters don't provide console output, so we will continue to identify the differences through log formats.  
+
+  
+_IDS/IPS mode with parameter "-A console"_
+
+Console mode provides fast style alerts on the console screen. Start the Snort instance in **console** alert mode (-A console ) with the following command `sudo snort -c /etc/snort/snort.conf -A console`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start generating alerts according to provided ruleset defined in the configuration file.
+
+_IDS/IPS mode with parameter "-A cmg"_
+
+Cmg mode provides basic header details with payload in hex and text format. Start the Snort instance in cmg alert mode (-A cmg ) with the following command `sudo snort -c /etc/snort/snort.conf -A cmg`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start generating alerts according to provided ruleset defined in the configuration file.
+
+**Let's compare the console and cmg outputs** before moving on to other alarm types. As you can see in the given outputs above, **console mode** provides basic header and rule information. **Cmg mode** provides full packet details along with rule information. 
+
+  
+_IDS/IPS mode with parameter "-A fast"_
+
+Fast mode provides alert messages, timestamps, and source and destination IP addresses. **Remember, there is no console output in this mode.** Start the Snort instance in fast alert mode (-A fast ) with the following command `sudo snort -c /etc/snort/snort.conf -A fast`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start generating alerts according to provided ruleset defined in the configuration file.
+
+_IDS/IPS mode with parameter "-A full"_
+
+Full alert mode provides all possible information about the alert. **Remember, there is no console output in this mode.** Start the Snort instance in full alert mode (-A full ) with the following command `sudo snort -c /etc/snort/snort.conf -A full`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start generating alerts according to provided ruleset defined in the configuration file.
+
+_IDS/IPS mode with parameter "-A none"_
+
+Disable alerting. This mode doesn't create the alert file. However, it still logs the traffic and creates a log file in binary dump format. Remember, there is no console output in this mode. Start the Snort instance in none alert mode (-A none) with the following command `sudo snort -c /etc/snort/snort.conf -A none`
+
+Now run the traffic-generator script as sudo and start ICMP/HTTP traffic. Once the traffic is generated, snort will start generating alerts according to provided ruleset defined in the configuration file.
+
+_IDS/IPS mode: "Using rule file without configuration file"_
+
+It is possible to run the Snort only with rules without a configuration file. Running the Snort in this mode will help you test the user-created rules. However, this mode will provide less performance.
+
+`sudo snort -c /etc/snort/rules/local.rules -A console`
+
+_IPS mode and dropping packets_
+
+Snort IPS mode activated with \-Q --daq afpacket parameters. You can also activate this mode by editing snort.conf file. However, you don't need to edit snort.conf file in the scope of this room. Review the bonus task or snort manual for further information on daq and advanced configuration settings: `-Q --daq afpacket`
+
+Activate the Data Acquisition (DAQ) modules and use the afpacket module to use snort as an IPS: `-i eth0:eth1`
+
+Identifying interfaces note that Snort IPS require at least two interfaces to work. Now run the traffic-generator script as sudo and start ICMP/HTTP traffic.
+
+`sudo snort -c /etc/snort/snort.conf -q -Q --daq afpacket -i eth0:eth1 -A console`
+
+### _**Operation Mode 4: PCAP Investigation**_
