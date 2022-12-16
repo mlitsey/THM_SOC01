@@ -438,3 +438,108 @@ Identifying interfaces note that Snort IPS require at least two interfaces to wo
 `sudo snort -c /etc/snort/snort.conf -q -Q --daq afpacket -i eth0:eth1 -A console`
 
 ### _**Operation Mode 4: PCAP Investigation**_
+Let's investigate PCAPs with Snort
+
+Capabilities of Snort are not limited to sniffing, logging and detecting/preventing the threats. PCAP read/investigate mode helps you work with pcap files. Once you have a pcap file and process it with Snort, you will receive default traffic statistics with alerts depending on your ruleset.
+
+Reading a pcap without using any additional parameters we discussed before will only overview the packets and provide statistics about the file. In most cases, this is not very handy. We are investigating the pcap with Snort to benefit from the rules and speed up our investigation process by using the known patterns of threats. 
+
+Note that we are pretty close to starting to create rules. Therefore, you need to grasp the working mechanism of the Snort, learn the discussed parameters and begin combining the parameters for different purposes.
+
+PCAP mode parameters are explained in the table below;
+![](2022-12-16-07-15-37.png)
+
+_Investigating single PCAP with parameter "-r"_
+
+For test purposes, you can still test the default reading option with pcap by using the following command `snort -r icmp-test.pcap`
+
+Let's investigate the pcap with our configuration file and see what will happen. `sudo snort -c /etc/snort/snort.conf -q -r icmp-test.pcap -A console -n 10`
+
+If you don't remember the purpose of the parameters in the given command, please revisit previous tasks and come back again!
+
+_Investigating multiple PCAPs with parameter "--pcap-list"_  
+
+Let's investigate multiple pcaps with our configuration file and see what will happen. `sudo snort -c /etc/snort/snort.conf -q --pcap-list="icmp-test.pcap http2.pcap" -A console -n 10`
+
+_Investigating multiple PCAPs with parameter "--pcap-show"_  
+
+Let's investigate multiple pcaps, distinguish each one, and see what will happen. `sudo snort -c /etc/snort/snort.conf -q --pcap-list="icmp-test.pcap http2.pcap" -A console --pcap-show`
+
+Investigate the **mx-1.pcap** file with the default configuration file.  
+
+`sudo snort -c /etc/snort/snort.conf -A full -l . -r mx-1.pcap`
+
+Investigate the mx-1.pcap file **with the second** configuration file.  
+
+`sudo snort -c /etc/snort/snortv2.conf -A full -l . -r mx-1.pcap`
+
+Investigate the **mx-2.pcap** file with the default configuration file.  
+
+`sudo snort -c /etc/snort/snort.conf -A full -l . -r mx-2.pcap`
+
+Investigate the mx-2.pcap and mx-3.pcap files with the default configuration file.  
+
+`sudo snort -c /etc/snort/snort.conf -A full -l . --pcap-list="mx-2.pcap mx-3.pcap"`
+
+### _**Snort Rule Structure**_
+**Let's Learn Snort Rules!**
+
+Understanding the Snort rule format is essential for any blue and purple teamer.  The primary structure of the snort rule is shown below;
+![](2022-12-16-07-29-18.png)
+- The following rule will generate an alert for each ICMP packet processed by Snort;
+![](2022-12-16-07-30-20.png)
+
+Each rule should have a type of action, protocol, source and destination IP, source and destination port and an option. Remember, Snort is in passive mode by default. So most of the time, you will use Snort as an IDS. You will need to start **"inline mode" to turn on IPS mode.** But before you start playing with inline mode, you should be familiar with Snort features and rules.  
+
+The Snort rule structure is easy to understand but difficult to produce. You should be familiar with rule options and related details to create efficient rules. It is recommended to practice Snort rules and option details for different use cases.
+
+We will cover the basic rule structure in this room and help you take a step into snort rules. You can always advance your rule creation skills with different rule options by practising different use cases and studying rule option details in depth. We will focus on two actions; **"alert"** for IDS mode and **"reject"** for IPS mode.
+
+Rules cannot be processed without a header. Rule options are "optional" parts. However, it is almost impossible to detect sophisticated attacks without using the rule options.
+![](2022-12-16-07-31-09.png)
+
+**IP and Port Numbers**
+
+These parameters identify the source and destination IP addresses and associated port numbers filtered for the rule.
+![](2022-12-16-07-32-06.png)
+
+Direction
+
+The direction operator indicates the traffic flow to be filtered by Snort. The left side of the rule shows the source, and the right side shows the destination.
+
+- **\->** Source to destination flow.
+- **<>** Bidirectional flow
+
+Note that there is no "<-" operator in Snort.
+![](2022-12-16-07-32-55.png)
+
+There are three main rule options in Snort;  
+
+- General Rule Options - Fundamental rule options for Snort. 
+- Payload Rule Options - Rule options that help to investigate the payload data. These options are helpful to detect specific payload patterns.
+- Non-Payload Rule Options - Rule options that focus on non-payload data. These options will help create specific patterns and identify network issues.
+
+**General Rule Options**
+
+![](2022-12-16-07-34-02.png)
+
+**Payload Detection Rule Options**
+
+![](2022-12-16-07-34-36.png)
+
+**Non-Payload Detection Rule Options**
+
+There are rule options that focus on non-payload data. These options will help create specific patterns and identify network issues.
+
+![](2022-12-16-07-35-31.png)
+
+Remember, once you create a rule, it is a local rule and should be in your "local.rules" file. This file is located under "/etc/snort/rules/local.rules". A quick reminder on how to edit your local rules is shown below.
+
+`sudo gedit /etc/snort/rules/local.rules`
+
+Note that there are some default rules activated with snort instance. These rules are deactivated to manage your rules and improve your exercise experience. For further information, please refer to the TASK-10 or [Snort manual](http://manual-snort-org.s3-website-us-east-1.amazonaws.com/).  
+
+By this point, we covered the primary structure of the Snort rules. Understanding and practicing the fundamentals is suggested before creating advanced rules and using additional options.
+
+Wow! We have covered the fundamentals of the Snort rules! Now, use the attached VM and navigate to the Task-Exercises/Exercise-Files/TASK-9 folder to answer the questions! Note that you can use the following command to create the logs in the **current directory: `-l .`**
+
