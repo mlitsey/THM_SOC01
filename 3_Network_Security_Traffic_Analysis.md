@@ -543,3 +543,93 @@ By this point, we covered the primary structure of the Snort rules. Understandin
 
 Wow! We have covered the fundamentals of the Snort rules! Now, use the attached VM and navigate to the Task-Exercises/Exercise-Files/TASK-9 folder to answer the questions! Note that you can use the following command to create the logs in the **current directory: `-l .`**
 
+Write a rule to filter **IP ID "35369"** and run it against the given pcap file. What is the request name of the detected packet? `snort -c local.rules -A full -l . -r task9.pcap`
+- `alert ip any any <> any any (msg: "IP Packet found";id:35369; sid:1000001; rev:1;)`
+- `cat alert`
+- TIMESTAMP REQUEST
+
+Create a rule to filter packets with Syn flag and run it against the given pcap file. What is the number of detected packets?
+- `alert tcp any any -> any any (msg: "Flags Found"; flags:S; sid:1000001; rev:1;)`
+- 1
+
+Clear the previous log and alarm files and deactivate/comment out the old rule.
+
+Write a rule to filter packets with Push-Ack flags and run it against the given pcap file. What is the number of detected packets?
+- `alert tcp any any -> any any (msg: "Flags Found"; flags:PA; sid:1000001; rev:1;)`
+- 216
+
+Clear the previous log and alarm files and deactivate/comment out the old rule.
+
+Create a rule to filter packets with the same source and destination IP and run it against the given pcap file. What is the number of detected packets?
+- `alert ip any any -> any any (msg: "Same IP Found"; sameip; sid:1000001; rev:1;)` This one didn't work added the next 2 for the correct answer
+- `alert tcp any any -> any any (msg: "Same IP Found"; sameip; sid:1000001; rev:1;)`
+- `alert udp any any -> any any (msg: "Same IP Found"; sameip; sid:1000002; rev:1;)`
+- 10
+
+Case Example - An analyst modified an existing rule successfully. Which rule option must the analyst change after the implementation?
+- rev
+
+### _**Snort2 Operation Logic: Points to Remember**_
+**P**oints to Remember
+
+**Main** Components of Snort
+
+- **Packet Decoder -** Packet collector component of Snort. It collects and prepares the packets for pre-processing. 
+- **Pre-processors -** A component that arranges and modifies the packets for the detection engine.
+- **Detection Engine -** The primary component that process, dissect and analyse the packets by applying the rules. 
+- Logging and Alerting - Log and alert generation component.
+- Outputs and Plugins - Output integration modules (i.e. alerts to syslog/mysql) and additional plugin (rule management detection plugins) support is done with this component. 
+
+**There are three types of rules available for snort**
+
+- Community Rules - Free ruleset under the GPLv2. Publicly accessible, no need for registration.
+- Registered Rules - Free ruleset (requires registration). This ruleset contains subscriber rules with 30 days delay.
+- Subscriber Rules (Paid) - Paid ruleset (requires subscription). This ruleset is the main ruleset and is updated twice a week (Tuesdays and Thursdays).
+
+You can download and read more on the rules [here](https://www.snort.org/downloads).
+
+**Note:** Once you install Snort2, it automatically creates the required directories and files. However, if you want to use the community or the paid rules, you need to indicate each rule in the snort.conf file.
+
+Since it is a long, all-in-one configuration file, editing it without causing misconfiguration is troublesome for some users. **That is why Snort has several rule updating modules and integration tools.** To sum up, never replace your configured Snort configuration files; you must edit your configuration files manually or update your rules with additional tools and modules to not face any fail/crash or lack of feature.
+
+- snort.conf: _Main configuration file._
+- local.rules: _User-generated rules file._
+
+**Let's start with overviewing the main configuration file (snort.conf)** `sudo gedit /etc/snort/snort.conf`
+
+**Navigate to the "Step #1: Set the network variables." section.**
+
+This section manages the scope of the detection and rule paths.
+![](2022-12-19-07-21-44.png)
+
+**Navigate to the "Step #2: Configure the decoder." section.**  
+
+In this section, you manage the IPS mode of snort. The single-node installation model IPS model works best with "afpacket" mode. You can enable this mode and run Snort in IPS.
+![](2022-12-19-07-22-29.png)
+
+Data Acquisition Modules (DAQ) are specific libraries used for packet I/O, bringing flexibility to process packets. It is possible to select DAQ type and mode for different purposes.
+
+There are six DAQ modules available in Snort;
+
+- **Pcap:** Default mode, known as Sniffer mode.
+- **Afpacket:** Inline mode, known as IPS mode.
+- **Ipq:** Inline mode on Linux by using Netfilter. It replaces the snort\_inline patch. 
+- **Nfq:** Inline mode on Linux.
+- **Ipfw:** Inline on OpenBSD and FreeBSD by using divert sockets, with the pf and ipfw firewalls.  
+    
+- **Dump:** Testing mode of inline and normalisation.
+
+The most popular modes are the default (pcap) and inline/IPS (Afpacket).
+
+**Navigate to the "Step #6: Configure output plugins" section.**
+
+This section manages the outputs of the IDS/IPS actions, such as logging and alerting format details. The default action prompts everything in the console application, so configuring this part will help you use the Snort more efficiently. 
+
+**Navigate to the "Step #7: Customise your ruleset" section.**
+![](2022-12-19-07-23-03.png)
+
+Note that "#" is commenting operator. You should uncomment a line to activate it.
+
+### _**Conclusion**_
+Complete the snort challenge room: [Snort Challenge - Live Attacks](https://tryhackme.com/room/snortchallenges1)
+
