@@ -633,3 +633,53 @@ Note that "#" is commenting operator. You should uncomment a line to activate it
 ### _**Conclusion**_
 Complete the snort challenge room: [Snort Challenge - Live Attacks](https://tryhackme.com/room/snortchallenges1)
 
+## **--Snort Challenge - The Basics--**
+### _**Introduction**_
+
+### _**Writing IDS Rules (HTTP)**_
+Write rules to detect "all TCP port 80 traffic" packets in the given pcap file. 
+
+`sudo tcpdump -n -r mx-3.pcap 'tcp port 80' | wc -l`
+- not used, just a test
+
+`alert tcp any any <> any 80 (msg: "TCP 80 Found"; ; sid:1000001; rev:1;)`
+- added this to local.rules
+
+`alert tcp any 80 <> any any (msg: "TCP 80 Found"; ; sid:1000002; rev:1;)`
+- added this to local.rules 
+
+`sudo snort -c ./local.rules -dev -l . -r ./mx-3.pcap`
+- used this to run sort
+
+What is the number of detected packets?
+- 328
+
+**Investigate the log file.**
+
+What is the destination address of packet 63?
+
+`snort -r snort.log.<number> -n 63`
+- 145.254.160.237
+
+What is the ACK number of packet 64?
+
+`snort -r snort.log.<number> -n 64`
+- 0x38AFFFF3
+
+What is the SEQ number of packet 62?
+
+`snort -r snort.log.<number> -n 62`
+- 0x38AFFFF3
+
+What is the TTL of packet 65?
+
+`snort -r snort.log.<number> -n 65`
+- 128
+
+What is the source IP of packet 65?
+- 145.254.160.237
+
+What is the source port of packet 65?
+- 3372
+
+### _**Writing IDS Rules (FTP)**_
