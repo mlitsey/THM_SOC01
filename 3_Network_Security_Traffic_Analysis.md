@@ -683,3 +683,68 @@ What is the source port of packet 65?
 - 3372
 
 ### _**Writing IDS Rules (FTP)**_
+Write rules to detect "all TCP port 21"  traffic in the given pcap.
+
+`alert tcp any any <> any 21 (msg: "TCP 21 found"; ; sid:1000001; rev:1;)`
+
+`alert tcp any 21 <> any any (msg: "TCP 21 found"; ; sid:1000002; rev:1;)`
+
+`sudo snort -c ./local.rules -dev -l . -r ./ftp-png-gif.pcap`
+
+What is the number of detected packets?
+- 614
+
+Investigate the log file.
+
+`sudo snort -r snort.log<number> -d "tcp and port 21" -n 10`
+
+What is the FTP service name?
+- Microsoft FTP service
+
+Clear the previous log and alarm files.
+
+`sudo rm snort.log* alert`
+
+Deactivate/comment on the old rules.
+
+Write a rule to detect failed FTP login attempts in the given pcap.
+
+`alert tcp any any <> any any (msg: "Failed FTP login found"; content: "530 user"; sid:1000003; rev:1;)`
+
+What is the number of detected packets?
+- 41
+
+Clear the previous log and alarm files.
+
+Deactivate/comment on the old rule.
+
+Write a rule to detect successful FTP logins in the given pcap.
+
+`alert tcp any any <> any any (msg: "Successful FTP login found"; content: "230 User"; sid:1000004; rev:1;)`
+
+What is the number of detected packets?
+- 1
+
+Clear the previous log and alarm files.
+
+Deactivate/comment on the old rule.
+
+Write a rule to detect failed FTP login attempts with a valid username but a bad password or no password.
+
+`alert tcp any any <> any any (msg: "FTP Bad Password found"; content: "331 Password"; sid:1000005; rev:1;)`
+
+What is the number of detected packets?
+- 42
+
+Clear the previous log and alarm files.
+
+Deactivate/comment on the old rule.
+
+Write a rule to detect failed FTP login attempts with "Administrator" username but a bad password or no password.
+
+`alert tcp any any <> any any (msg: "FTP Bad Password found"; content: "Administrator"; content: "331 Password"; sid:1000006; rev:1;)`
+
+What is the number of detected packets?
+- 7
+
+### _**Writing IDS Rules (PNG)**_
