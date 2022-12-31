@@ -748,3 +748,27 @@ What is the number of detected packets?
 - 7
 
 ### _**Writing IDS Rules (PNG)**_
+
+Write a rule to detect the PNG file in the given pcap.
+- [https://en.wikipedia.org/wiki/List\_of\_file\_signatures](https://en.wikipedia.org/wiki/List_of_file_signatures)
+- `alert tcp any any <> any any (msg: "PNG image found"; content: "|89 50 4E 47 0D 0A 1A 0A|"; sid:1000007; rev:1;)`
+- `sudo snort -c ./local.rules -dev -l . -r ftp-png-gif.pcap `
+
+Investigate the logs and identify the software name embedded in the packet.
+- Adobe ImageRead
+
+Clear the previous log and alarm files.
+
+Deactivate/comment out the old rule.
+
+Write a rule to detect the GIF file in the given pcap.
+- `alert tcp any any <> any any (msg: "GIF87a image found"; content: "|47 49 46 38 37 61|"; sid:1000008; rev:1;)`
+- `alert tcp any any <> any any (msg: "GIF89a image found"; content: "|47 49 46 38 39 61|"; sid:1000009; rev:1;)`
+
+Investigate the logs and identify the image format embedded in the packet.
+- `sudo snort -d -r snort.log.<number>`
+- `less alert`
+- GIF89a
+
+### _**Writing IDS Rules (Torrent Metafile)**_
+
