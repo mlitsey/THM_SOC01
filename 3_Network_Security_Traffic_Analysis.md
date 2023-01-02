@@ -772,3 +772,30 @@ Investigate the logs and identify the image format embedded in the packet.
 
 ### _**Writing IDS Rules (Torrent Metafile)**_
 
+Write a rule to detect the torrent metafile in the given pcap.
+- `alert tcp any any <> any any (msg: "Torrent found"; content: "torrent"; sid:1000010; rev:1;)`
+- `sudo snort -c ./local.rules -dev -l . -r torrent.pcap`
+
+
+ What is the number of detected packets?
+ - 2
+
+Investigate the log/alarm files.
+- `sudo snort -d -r snort.log<number>`
+
+What is the name of the torrent application?
+- bittorrent
+
+Investigate the log/alarm files.
+- `sudo snort -d -r snort.log<number>`
+
+What is the MIME (Multipurpose Internet Mail Extensions) type of the torrent metafile?
+- application/x-bittorrent
+
+Investigate the log/alarm files.
+- `sudo snort -d -r snort.log<number>`
+
+What is the hostname of the torrent metafile?
+- tracker2.torrentbox.com
+
+### _**Troubleshooting Rule Syntax Errors**_
