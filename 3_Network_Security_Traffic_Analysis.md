@@ -799,3 +799,65 @@ What is the hostname of the torrent metafile?
 - tracker2.torrentbox.com
 
 ### _**Troubleshooting Rule Syntax Errors**_
+You can test each ruleset with the following command structure;
+
+`sudo snort -c local-X.rules -r mx-1.pcap -A console`
+
+Fix the syntax error in local-1.rules file and make it work smoothly.  
+
+`alert tcp any 3372 -> any any (msg: "Troubleshooting 1"; sid:1000001; rev:1;)`
+
+What is the number of the detected packets?
+- 16
+
+Fix the syntax error in local-2.rules file and make it work smoothly.
+
+`alert icmp any any -> any any (msg: "Troubleshooting 2"; sid:1000001; rev:1;)`
+
+What is the number of the detected packets?
+- 68
+
+Fix the syntax error in local-3.rules file and make it work smoothly.
+
+`alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)`
+
+`alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)`
+
+What is the number of the detected packets?
+- 87
+
+Fix the syntax error in local-4.rules file and make it work smoothly.
+
+`alert icmp any any -> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)`
+
+`alert tcp any 80,443 -> any any (msg: "HTTPX Packet Found"; sid:1000002; rev:1;)`
+
+What is the number of the detected packets?
+- 90
+
+Fix the syntax error in local-5.rules file and make it work smoothly.
+
+`alert icmp any any <> any any (msg: "ICMP Packet Found"; sid:1000001; rev:1;)`
+
+`alert icmp any any <> any any (msg: "Inbound ICMP Packet Found"; sid:1000002; rev:1;)`
+
+`alert tcp any any -> any 80,443 (msg: "HTTPX Packet Found"; sid:1000003; rev:1;)`
+
+What is the number of the detected packets?
+- 155
+
+Fix the logical error in local-6.rules file and make it work smoothly to create alerts.
+
+`alert tcp any any <> any any (msg: "get request found"; content:"|67 65 74|";nocase ; sid:10000001; rev:1;)`
+
+What is the number of the detected packets?
+- 2
+
+Fix the logical error in local-7.rules file and make it work smoothly to create alerts.
+
+`alert tcp any any <> any 80  (msg: "alert found"; content:"|2E 68 74 6D 6C|"; sid:1000001; rev:1;)`
+
+What is the name of the required option:
+- msg
+
+### _**Using External Rules (MS17-010)**_
