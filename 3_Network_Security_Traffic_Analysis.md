@@ -1264,19 +1264,13 @@ NetworkMiner in a Nutshell
 
 We are using NetworkMiner free edition in this room, but a Professional edition has much more features. You can see the differences between free and professional versions** [**here**](https://www.netresec.com/?page=NetworkMiner).
 
-Operating Modes
-
-  
+**Operating Modes**
 
 There are two main operating modes;
-
-  
 
 - Sniffer Mode: Although it has a sniffing feature, it is not intended to use as a sniffer. The sniffier feature is available only on Windows. However, the rest of the features are available in Windows and Linux OS. Based on experience, the sniffing feature is not as reliable as other features. Therefore we suggest not using this tool as a primary sniffer. Even the official description of the tool mentions that this tool is a "Network Forensics Analysis Tool", but it can be used as a "sniffer". In other words, it is a Network Forensic Analysis Tool with but has a sniffer feature, but it is not a dedicated sniffer like Wireshark and tcpdump. 
 
 - Packet Parsing/Processing: NetworkMiner can parse traffic captures to have a quick overview and information on the investigated capture. This operation mode is mainly suggested to grab the "low hanging fruit" before diving into a deeper investigation.
-
-  
 
 **Pros and Cons** 
 
@@ -1304,3 +1298,303 @@ NetworkMiner and Wireshark have similar base features, but they separate in use 
 The best practice is to record the traffic for offline analysis, quickly overview the pcap with NetworkMiner and go deep with Wireshark for further investigation.
 
 ![](2023-01-08-09-40-44.png)
+
+### _**Tool Overview 1**_
+
+**File Menu**
+
+The file menu helps you load a Pcap file or receive Pcap over IP. You can also drag and drop pcap files as well. 
+
+NetworkMiner also can receive Pcaps over IP. This room suggests using NetworkMiner as an initial investigation tool for low hanging fruit grabbing and traffic overview. Therefore, we will skip receiving Pcaps over IP in this room. You can read on receiving Pcap over IP from [here](https://www.netresec.com/?page=Blog&month=2011-09&post=Pcap-over-IP-in-NetworkMiner) and [here](http://www.gavinhollinger.com/2016/10/pcap-over-ip-to-networkminer.html).
+
+**Tools Menu**
+
+The tools menu helps you clear the dashboard and remove the captured data. 
+
+**Help Menu**
+
+The help menu provides information on updates and the current version.
+
+**Case Panel**
+
+The case panel shows the list of the investigated pcap files. You can reload/refresh, view metadata details and remove loaded files from this panel.
+
+Viewing metadata of loaded files;
+
+**Hosts**
+
+The "hosts" menu shows the identified hosts in the pcap file. This section provides information on;
+
+- IP address
+- MAC address
+- OS type
+- Open ports
+- Sent/Received packets
+- Incoming/Outgoing sessions
+- Host details
+
+OS fingerprinting uses the Satori GitHub repo and p0f, and the MAC address database uses the mac-ages GitHub repo.
+
+You can sort the identified hosts by using the sort menu. You can change the colour of the hosts as well. Some of the features (OSINT lookup) are available only in premium mode. The right-click menu also helps you to copy the selected value.
+
+**Sessions**
+
+The session menu shows detected sessions in the pcap file. This section provides information on;
+
+- Frame number
+- Client and server address
+- Source and destination port  
+- Protocol
+- Start time
+
+You can search for keywords inside frames with the help of the filtering bar. It is possible to filter specific columns of the session menu as well. This menu accepts four types of inputs;  
+
+- "ExactPhrase"
+- "AllWords"
+- "AnyWord"
+- "RegExe"
+
+**DNS**
+
+The DNS menu shows DNS queries with details. This section provides information on;
+
+- Frame number
+- Timestamp
+- Client and server
+- Source and destination port 
+- IP TTL
+- DNS time
+- Transaction ID and type
+- DNS query and answer
+- Alexa Top 1M
+
+Some of the features (Alexa Top 1M) are available only in premium mode. The search bar is available here as well.
+
+**Credentials**
+
+The credentials menu shows extracted credentials and password [hashes](https://tryhackme.com/room/hashingcrypto101) from investigated pcaps. You can use [Hashcat](https://tryhackme.com/room/crackthehashlevel2) ([GitHub](https://github.com/hashcat/hashcat)) and [John the Ripper](https://tryhackme.com/room/johntheripper0) ([GitHub](https://github.com/openwall/john)) to decrypt extracted credentials. NetworkMiner can extract credentials including;  
+
+- Kerberos hashes
+- NTLM hashes
+- RDP cookies
+- HTTP cookies  
+- HTTP requests
+- IMAP
+- FTP
+- SMTP
+- MS SQL
+
+The right-click menu is helpful in this part as well. You can easily copy the username and password values.
+
+
+**Questions**
+
+Use mx-3.pcap
+
+What is the total number of frames?
+- Right click the file in the Case Panel and click show metadata
+- 460
+
+How many IP addresses use the same MAC address with host 145.253.2.203?
+- On the Hosts tab expand the IP address 145.253.2.203 then expand the MAC
+- 2 
+
+How many packets were sent from host 65.208.228.223?
+- On the Hosts tab expand the IP address
+- 72
+
+What is the name of the webserver banner under host 65.208.228.223?
+- On the Hosts tab expand the IP address then expand the Host Details
+- Apache
+
+Use mx-4.pcap
+
+What is the extracted username?
+- On the Credentials tab look at the Username column
+- #B\Administrator
+
+What is the extracted password?
+- Right click the second line and copy the password
+- `$NETNTLMv2$#B$136B077D942D9A63$FBFF3C253926907AAAAD670A9037F2A5$01010000000000000094D71AE38CD60170A8D571127AE49E00000000020004003300420001001E003000310035003600360053002D00570049004E00310036002D004900520004001E0074006800720065006500620065006500730063006F002E0063006F006D0003003E003000310035003600360073002D00770069006E00310036002D00690072002E0074006800720065006500620065006500730063006F002E0063006F006D0005001E0074006800720065006500620065006500730063006F002E0063006F006D00070008000094D71AE38CD601060004000200000008003000300000000000000000000000003000009050B30CECBEBD73F501D6A2B88286851A6E84DDFAE1211D512A6A5A72594D340A001000000000000000000000000000000000000900220063006900660073002F003100370032002E00310036002E00360036002E0033003600000000000000000000000000`
+
+### _**Tool Overview 2**_
+
+**Files**
+
+The file menu shows extracted files from investigated pcaps. This section provides information on;
+
+- Frame number
+- Filename
+- Extension
+- Size
+- Source and destination address
+- Source and destination port
+- Protocol
+- Timestamp
+- Reconstructed path
+- Details
+
+Some features (OSINT hash lookup and sample submission) are available only in premium mode. The search bar is available here as well. The right-click menu is helpful in this part as well. You can easily open files and folders and view the file details in-depth.
+
+**Images**
+
+The file menu shows extracted images from investigated pcaps. The right-click menu is helpful in this part as well. You can open files and zoom in & out easily.
+
+Once you hover over the image, it shows the file's detailed information (source & destination address and file path).
+
+**Parameters**
+
+The file menu shows extracted parameters from investigated pcaps. This section provides information on;
+
+- Parameter name
+- Parameter value
+- Frame number
+- Source and destination host
+- Source and destination port
+- Timestamp
+- Details
+
+The right-click menu is helpful in this part as well. You can copy the parameters and values easily.
+
+**Keywords**
+
+The file menu shows extracted keywords from investigated pcaps. This section provides information on;
+
+- Frame number
+- Timestamp
+- Keyword
+- Context
+- Source and destination host
+- source and destination port
+
+How to filter keywords;
+
+- Add keywords
+- Reload case files!
+
+**Note:** You can filter multiple keywords in this section; however, you must reload the case files after updating the search keywords. Keyword search investigates all possible data in the processed pcaps.
+
+**Messages**
+
+The messages menu shows extracted emails, chats and messages from investigated pcaps. This section provides information on;
+
+- Frame number
+- Source and destination host 
+- Protocol
+- Sender (From)
+- Receiver (To)
+- Timestamp
+- Size
+
+Once you filter the traffic and get a hit, you will discover additional details like attachments and attributes on the selected message. Note that the search bar is available here as well. The right-click menu is available here. You can use the built-in viewer to investigate overall information and the "open file" option to explore attachments.
+
+**Anomalies**
+
+The anomalies menu shows detected anomalies in the processed pcap. Note that NetworkMiner isn't designated as an IDS. However, developers added some detections for EternalBlue exploit and spoofing attempts.
+
+**Questions**
+
+Use mx-7 pcap
+
+What is the name of the Linux distro mentioned in the file associated with frame 63075? 
+- On the Files tab enter the frame number in the Filter Keyword and click apply. Look at the Source Host
+- centos
+
+What is the header of the page associated with frame 75942?
+- On the Files tab enter the frame number in the Filter Keyword and click apply. Right click and open File Details. Look for `<h1>`
+- Password-Ned AB
+
+What is the source address of the image "ads.bmp.2E5F0FD9.bmp"?
+- On the Files tab enter the file name in the Filter Keyword and click apply. Look at the Source Host
+- 80.239.178.187
+
+What is the frame number of the possible TLS anomaly?
+- On the Anomalies tab look at the frame number
+- 36255
+
+Use mx-9 file
+
+Look at the messages. Which platform sent a password reset email?
+- How? No password reset email but only 1 email with password in it.
+- facebook
+
+What is the email address of Branson Matheson?
+- On the Messages tab look at the From column
+- branson@sandsite.org
+
+### _**Version Differences**_
+
+As always, it wouldn't be surprising to see a feature improvement as the version goes up. Unsurprisingly version upgrades provide stability, security fixes and features. Here the feature part is quite tricky. Feature upgrades can represent implementing new features and updating the existing feature (optimisation, alteration or operation mode modification). You can always check the changelog [here](https://www.netresec.com/?page=NetworkMiner).  
+
+Since there are some significant differences between the versions, the given VM has both of the major versions (v1.6 and v2.7).
+
+Of course, as the program version increases, it is expected to increase feature increase and scope. Here are the significant differences between versions 1.6 and 2.7. Here are the differences;
+
+**Mac Address Processing**
+
+NetworkMiner versions after version 2 can process MAC address specific correlation as shown in the picture below. This option will help you identify if there is a MAC Address conflict. This feature is not available before version 2.
+
+**Sent/Received Packet Processing**
+
+NetwrokMiner versions up to version 1.6. can handle packets in much detail. These options will help you investigate the sent/received packets in a more detailed format. This feature is not available after version 1.6.
+
+**Frame Processing**
+
+NetworkMiner versions up to version 1.6. can handle frames. This option provides the number of frames and essential details about the frames. This feature is not available after version 1.6.
+
+**Parameter Processing**
+
+NetworkMiner versions after version 2 can handle parameters in a much more extensive form. Therefore version 1.6.xx catches fewer parameters than version 2.
+
+**Cleartext Processing**
+
+NetworkMiner versions up to version 1.6. can handle cleartext data. This option provides all extracted cleartext data in a single tab; it is beneficial to investigate cleartext data about the traffic data. However, it is impossible to match the cleartext data and packets. This feature is not available after version 1.6.
+
+Which version can detect duplicate MAC addresses?
+- 2.7
+
+Which version can handle frames?
+- 1.6
+
+Which version can provide more details on packet details?
+- 1.6
+
+### _**Exercises**_
+
+Use case1.pcap
+
+What is the OS name of the host 131.151.37.122?
+- 
+
+Investigate the hosts 131.151.37.122 and 131.151.32.91.
+How many data bytes were received from host 131.151.32.91 to host 131.151.37.122 through port 1065?
+- 
+
+Investigate the hosts 131.151.37.122 and 131.151.32.21.
+How many data bytes were received from host 131.151.37.122 to host 131.151.32.21 through port 143?
+- 
+
+What is the sequence number of frame 9?
+- 
+
+What is the number of the detected "content types"?
+- 
+
+Use case2.pcap
+Investigate the files.
+
+What is the USB product's brand name?
+- 
+
+What is the name of the phone model?
+- 
+
+What is the source IP of the fish image?
+- 
+
+What is the password of the "homer.pwned.se@gmx.com"?
+- 
+
+What is the DNS Query of frame 62001?
+- 
+
