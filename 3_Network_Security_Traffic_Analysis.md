@@ -1564,37 +1564,63 @@ Which version can provide more details on packet details?
 Use case1.pcap
 
 What is the OS name of the host 131.151.37.122?
-- 
+- Windows - Windows NT 4
 
 Investigate the hosts 131.151.37.122 and 131.151.32.91.
 How many data bytes were received from host 131.151.32.91 to host 131.151.37.122 through port 1065?
-- 
+- Network Miner 2.7.2, On the Hosts tab expand the 122 host, expand the Incoming sessions, expand the tcp 1065 
+- 192
 
 Investigate the hosts 131.151.37.122 and 131.151.32.21.
 How many data bytes were received from host 131.151.37.122 to host 131.151.32.21 through port 143?
-- 
+- On Hosts tab expand 122 host, expand Incoming sessions, expand TCP 143
+- 20769
 
 What is the sequence number of frame 9?
-- 
+- Netowrk Miner 1.6.1, on the Frames tab, expand Frame 9, expand TCP
+- 2AD77400
 
 What is the number of the detected "content types"?
-- 
+- ??? Not sure how to find this
+- 2
 
 Use case2.pcap
 Investigate the files.
 
 What is the USB product's brand name?
-- 
+- On the Images tab look for the usb device, hover to see details
+- asix
 
 What is the name of the phone model?
-- 
+- On the Images tab look for the phone, hover to see details
+- lumia 535
 
 What is the source IP of the fish image?
-- 
+- On the Images tab look for the fish, hover to see details
+- 50.22.95.9
 
 What is the password of the "homer.pwned.se@gmx.com"?
-- 
+- On the Credentials tab look for the username
+- spring2015
 
 What is the DNS Query of frame 62001?
-- 
+- On the DNS tab, enter frame number for keyword then choose frame number for the column then hit apply
+- pop.gmx.com
+
+### _**Conclusion**_
+
+In this room, we covered NetworkMiner, what it is, how it operates, and how to investigate pcap files. As I mentioned in the tasks before, there are a few things to remember about the NetworkMiner;  
+
+- Don't use this tool as a primary sniffer.
+- Use this tool to overview the traffic, then move forward with Wireshark and tcpdump for a more in-depth investigation.
+
+If you like this content, make sure you visit the following rooms later on THM;
+
+- [**Wireshark**](https://tryhackme.com/room/wireshark)
+- [**Snort**](https://tryhackme.com/room/snort)
+- [**Brim**](https://tryhackme.com/room/brim)
+
+## **--Zeek--**
+
+### _**Introduction**_
 
