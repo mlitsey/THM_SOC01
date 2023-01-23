@@ -1750,3 +1750,320 @@ Investigate the "sample.pcap" file. What is the number of generated alert files?
 
 ### _**Zeek Logs**_
 
+Zeek generates log files according to the traffic data. You will have logs for every connection in the wire, including the application level protocols and fields. Zeek is capable of identifying 50+ logs and categorising them into seven categories. Zeek logs are well structured and tab-separated ASCII files, so reading and processing them is easy but requires effort. You should be familiar with networking and protocols to correlate the logs in an investigation, know where to focus, and find a specific piece of evidence.
+
+Each log output consists of multiple fields, and each field holds a different part of the traffic data. Correlation is done through a unique value called "UID". The "UID" represents the unique identifier assigned to each session.
+
+**Zeek logs in a nutshell**
+
+![](2023-01-19-06-28-37.png)
+
+Please refer to [Zeek's official documentation](https://docs.zeek.org/en/current/script-reference/log-files.html) and [Corelight log cheat sheet](https://corelight.com/about-zeek/zeek-data) for more information. Although there are multiple log files, some log files are updated daily, and some are updated in each session. Some of the most commonly used logs are explained in the given table.
+
+![](2023-01-19-06-30-29.png)
+
+This is too much protocol and log information! Yes, it is true; a difficulty of working with Zeek is having the required network knowledge and investigation mindset. Don't worry; you can have both of these and even more knowledge by working through TryHackMe paths. Just keep the streak! 
+
+**Brief log usage primer table**
+
+![](2023-01-19-06-31-17.png)
+
+You can categorise the logs before starting an investigation. Thus, finding the evidence/anomaly you are looking for will be easier. The given table is a brief example of using multiple log files. You can create your working model or customise the given one. Make sure you read each log description and understand the purpose to know what to expect from the corresponding log file. Note that these are not the only ones to focus on. Investigated logs are highly associated with the investigation case type and hypothesis, so do not just rely only on the logs given in the example table!
+
+  
+
+The table shows us how to use multiple logs to identify anomalies and run an investigation by correlating across the available logs.
+
+  
+
+- **Overall Info:** The aim is to review the overall connections, shared files, loaded scripts and indicators at once. This is the first step of the investigation.
+- **Protocol Based:** Once you review the overall traffic and find suspicious indicators or want to conduct a more in-depth investigation, you focus on a specific protocol.
+- **Detection:** Use the prebuild or custom scripts and signature outcomes to support your findings by having additional indicators or linked actions. 
+- **Observation:** The summary of the hosts, services, software, and unexpected activity statistics will help you discover possible missing points and conclude the investigation.
+
+Remember, we mention the pros and cons of the Zeek logs at the beginning of this task. Now let's demonstrate the log viewing and identify the differences between them.
+
+**Recall 1:** Zeek logs are well structured and tab-separated ASCII files, so reading and processing them is easy but requires effort.
+
+**Recall 2:** Investigating the generated logs will require command-line tools (cat, cut, grep sort, and uniq) and additional tools (zeek-cut). 
+
+**Opening a Zeek log with a text editor and built-in commands**
+
+![](2023-01-19-06-34-54.png)
+
+The above image shows that reading the logs with tools is not enough to spot an anomaly quickly. Logs provide a vast amount of data to investigate and correlate. You will need to have technical knowledge and event correlation ability to carry out an investigation. It is possible to use external visualisation and correlation tools such as ELK and Splunk. We will focus on using and processing the logs with a hands-on approach in this room.
+
+In addition to Linux command-line tools, one auxiliary program called `zeek-cut` reduces the effort of extracting specific columns from log files. Each log file provides "field names" in the beginning. This information will help you while using `zeek-cut`. Make sure that you use the "fields" and not the "types".
+
+![](2023-01-19-06-36-27.png)
+
+Let's see the "zeek-cut" in action. Let's extract the uid, protocol, source and destination hosts, and source and destination ports from the conn.log. We will first read the logs with the `cat` command and then extract the event of interest fields with `zeek-cut` auxiliary to compare the difference.
+
+```
+root@ubuntu$ cat conn.log 
+...
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+1488571051.943250	CTMFXm1AcIsSnq2Ric	192.168.121.2	51153	192.168.120.22	53	udp	dns	0.001263	36	106	SF	-	-0	Dd	1	64	1	134	-
+1488571038.380901	CLsSsA3HLB2N6uJwW	192.168.121.10	50080	192.168.120.10	514	udp	-	0.000505	234	0	S0	-	-0	D	2	290	0	0	-
+
+root@ubuntu$ cat conn.log | zeek-cut uid proto id.orig_h id.orig_p id.resp_h id.resp_p 
+CTMFXm1AcIsSnq2Ric	udp	192.168.121.2	51153	192.168.120.22	53
+CLsSsA3HLB2N6uJwW	udp	192.168.121.10	50080	192.168.120.10	514
+```
+
+As shown in the above output, the "zeek-cut" auxiliary provides massive help to extract specific fields with minimal effort. Now take time to read log formats, practice the log reading/extracting operations and answer the questions.
+
+**Questions**
+
+Each exercise has a folder. Ensure you are in the right directory to find the pcap file and accompanying files. Desktop/Exercise-Files/TASK-3
+
+Investigate the sample.pcap file. Investigate the dhcp.log file. What is the available hostname?
+
+- `cd Desktop/Exercise-Files/TASK-3/`
+- `ls -lah`
+- `zeek -C -r sample.pcap`
+- `ls -lah`
+- `cat dhcp.log`
+- Microknoppix
+
+Investigate the dns.log file. What is the number of unique DNS queries?
+
+- `cat dns.log | zeek-cut query | uniq`
+- `cat dns.log | zeek-cut query | uniq | wc -l`
+- 2
+
+Investigate the conn.log file. What is the longest connection duration?
+
+- `cat conn.log | zeek-cut duration | sort -n | tail`
+- 332.319364
+
+
+### _**CLI Kung-Fu Recall: Processing Zeek Logs**_
+
+Graphical User Interfaces (GUI) are handy and good for accomplishing tasks and processing information quickly. There are multiple advantages of GUIs, especially when processing the information visually. However, when processing massive amounts of data, GUIs are not stable and as effective as the CLI (Command Line Interface) tools.
+
+The critical point is: What if there is no "function/button/feature" for what you want to find/view/extract?
+
+Having the power to manipulate the data at the command line is a crucial skill for analysts. Not only in this room but each time you deal with packets, you will need to use command-line tools, Berkeley Packet Filters (BPF) and regular expressions to find/view/extract the data you are looking for. This task provides quick cheat-sheet like information to help you write CLI queries for your event of interest.
+
+![](2023-01-19-07-00-58.png)
+
+![](2023-01-19-07-01-23.png)
+
+### _**Zeek Signatures**_
+
+Zeek supports signatures to have rules and event correlations to find noteworthy activities on the network. Zeek signatures use low-level pattern matching and cover conditions similar to Snort rules. Unlike Snort rules, Zeek rules are not the primary event detection point. Zeek has a scripting language and can chain multiple events to find an event of interest. We focus on the signatures in this task, and then we will focus on Zeek scripting in the following tasks.
+
+Zeek signatures are composed of three logical paths; signature id, conditions and action. The signature breakdown is shown in the table below
+
+| 
+| Signature id | Unique signature name. |
+| Conditions | Header: Filtering the packet headers for specific source and destination addresses, protocol and port numbers.Content: Filtering the packet payload for specific value/pattern. |
+| Action | Default action: Create the "signatures.log" file in case of a signature match. Additional action: Trigger a Zeek script. |
+
+Now let's dig more into the Zeek signatures. The below table provides the most common conditions and filters for the Zeek signatures.
+
+![](2023-01-23-06-38-24.png)
+
+`zeek -C -r sample.pcap -s sample.sig`
+
+![](2023-01-23-06-39-10.png)
+
+**Example | Cleartext Submission of Password**
+
+Let's create a simple signature to detect HTTP cleartext passwords.
+
+- HTTP Password Sample Signature
+```
+signature http-password {
+     ip-proto == tcp
+     dst_port == 80
+     payload /.*password.*/
+     event "Cleartext Password Found!"
+}
+
+# signature: Signature name.
+# ip-proto: Filtering TCP connection.
+# dst-port: Filtering destination port 80.
+# payload: Filtering the "password" phrase.
+# event: Signature match message.
+```
+
+Remember, Zeek signatures support regex. Regex ".*" matches any character zero or more times. The rule will match when a "password" phrase is detected in the packet payload. Once the match occurs, Zeek will generate an alert and create additional log files (signatures.log and notice.log).
+
+- Signature Usage and Log Analysis
+```
+ubuntu@ubuntu$ zeek -C -r http.pcap -s http-password.sig 
+ubuntu@ubuntu$ ls
+clear-logs.sh  conn.log  files.log  http-password.sig  http.log  http.pcap  notice.log  packet_filter.log  signatures.log
+
+ubuntu@ubuntu$ cat notice.log  | zeek-cut id.orig_h id.resp_h msg 
+10.10.57.178	44.228.249.3	10.10.57.178: Cleartext Password Found!
+10.10.57.178	44.228.249.3	10.10.57.178: Cleartext Password Found!
+
+ubuntu@ubuntu$ cat signatures.log | zeek-cut src_addr dest_addr sig_id event_msg 
+10.10.57.178		http-password	10.10.57.178: Cleartext Password Found!
+10.10.57.178		http-password	10.10.57.178: Cleartext Password Found!
+```
+
+As shown in the above terminal output, the signatures.log and notice.log provide basic details and the signature message. Both of the logs also have the application banner field. So it is possible to know where the signature match occurs. Let's look at the application banner!
+
+- Log Analysis
+```
+ubuntu@ubuntu$ cat signatures.log | zeek-cut sub_msg
+POST /userinfo.php HTTP/1.1\x0d\x0aHost: testphp.vulnweb.com\x0d\x0aUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/...
+
+ubuntu@ubuntu$ cat notice.log  | zeek-cut sub
+POST /userinfo.php HTTP/1.1\x0d\x0aHost: testphp.vulnweb.com\x0d\x0aUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:98.0) Gecko/20100101 Firefox/...
+```
+
+We will demonstrate only one log file output to avoid duplication after this point. You can practice discovering the event of interest by analysing notice.log and signatures.log.
+
+**Example | FTP Brute-force**
+
+Let's create another rule to filter FTP traffic. This time, we will use the FTP content filter to investigate command-line inputs of the FTP traffic. The aim is to detect FTP "admin" login attempts. This basic signature will help us identify the admin login attempts and have an idea of possible admin account abuse or compromise events.
+
+- Sample Signature
+```
+signature ftp-admin {
+     ip-proto == tcp
+     ftp /.*USER.*dmin.*/
+     event "FTP Admin Login Attempt!"
+}
+```
+
+Let's run the Zeek with the signature and investigate the signatures.log and notice.log.
+
+- FTP Signature
+```
+ubuntu@ubuntu$ zeek -C -r ftp.pcap -s ftp-admin.sig
+ubuntu@ubuntu$ cat signatures.log | zeek-cut src_addr dst_addr event_msg sub_msg | sort -r| uniq
+10.234.125.254	10.121.70.151	10.234.125.254: FTP Admin Login Attempt!	USER administrator
+10.234.125.254	10.121.70.151	10.234.125.254: FTP Admin Login Attempt!	USER admin 
+```
+
+Our rule shows us that there are multiple logging attempts with account names containing the "admin" phrase. The output gives us great information to notice if there is a brute-force attempt for an admin account.
+
+This signature can be considered a case signature. While it is accurate and works fine, we need global signatures to detect the "known threats/anomalies". We will need those case-based signatures for significant and sophistical anomalies like zero-days and insider attacks in the real-life environment. Having individual rules for each case will create dozens of logs and alerts and cause missing the real anomaly. The critical point is logging logically, not logging everything.
+
+We can improve our signature by not limiting the focus only to an admin account. In that case, we need to know how the FTP protocol works and the default response codes. If you don't know these details, please refer to [RFC documentation](https://datatracker.ietf.org/doc/html/rfc765). 
+
+**Let's optimise our rule and make it detect all possible FTP brute-force attempts.**  
+
+This signature will create logs for each event containing "FTP 530 response", which allows us to track the login failure events regardless of username.
+
+- Sample Signature
+```
+signature ftp-brute {
+     ip-proto == tcp
+     payload /.*530.*Login.*incorrect.*/
+     event "FTP Brute-force Attempt"
+}
+```
+
+Zeek signature files can consist of multiple signatures. Therefore we can have one file for each protocol/situation/threat type. Let's demonstrate this feature in our global rule.
+
+- Sample Signature
+```
+signature ftp-username {
+    ip-proto == tcp
+    ftp /.*USER.*/
+    event "FTP Username Input Found!"
+}
+
+signature ftp-brute {
+    ip-proto == tcp
+     payload /.*530.*Login.*incorrect.*/
+    event "FTP Brute-force Attempt!"
+}
+```
+
+Let's merge both of the signatures in a single file. We will have two different signatures, and they will generate alerts according to match status. The result will show us how we benefit from this action. Again, we will need the "CLI Kung-Fu" skills to extract the event of interest.
+
+This rule should show us two types of alerts and help us to correlate the events by having "FTP Username Input" and "FTP Brute-force Attempt" event messages. Let's investigate the logs. We're grepping the logs in range 1001-1004 to demonstrate that the first rule matches two different accounts (admin and administrator). 
+
+- FTP Signature
+```
+ubuntu@ubuntu$ zeek -C -r ftp.pcap -s ftp-admin.sig
+ubuntu@ubuntu$ cat notice.log | zeek-cut uid id.orig_h id.resp_h msg sub | sort -r| nl | uniq | sed -n '1001,1004p'
+  1001	CeMYiaHA6AkfhSnd	10.234.125.254	10.121.70.151	10.234.125.254: FTP Username Input Found!	USER admin
+  1002	CeMYiaHA6AkfhSnd	10.234.125.254	10.121.70.151	10.121.70.151: FTP Brute-force Attempt!	530 Login incorrect.
+  1003	CeDTDZ2erDNF5w7dyf	10.234.125.254	10.121.70.151	10.234.125.254: FTP Username Input Found!	USER administrator
+  1004	CeDTDZ2erDNF5w7dyf	10.234.125.254	10.121.70.151	10.121.70.151: FTP Brute-force Attempt!	530 Login incorrect.
+```
+
+**Snort Rules in Zeek?**  
+
+While Zeek was known as Bro, it supported Snort rules with a script called snort2bro, which converted Snort rules to Bro signatures. However, after the rebranding, workflows between the two platforms have changed. [The official Zeek document](https://docs.zeek.org/en/master/frameworks/signatures.html) mentions that the script is no longer supported and is not a part of the Zeek distribution.
+
+**Questions**
+
+Each exercise has a folder. Ensure you are in the right directory to find the pcap file and accompanying files. Desktop/Exercise-Files/TASK-5
+
+Investigate the http.pcap file. Create the  HTTP signature shown in the task and investigate the pcap. What is the source IP of the first event?
+
+- `cd Desktop/Exercise-Files/TASK-5/`
+- `ls -lah`
+- `cd http/`
+- `cat http-password.sig`
+- `vi http-password.sig`
+```
+signature http-password {
+     ip-proto == tcp
+     dst_port == 80
+     payload /.*password.*/
+     event "Cleartext Password Found!"
+}
+```
+- `zeek -C -r http.pcap -s http-password.sig`
+- `cat notice.log | zeek-cut id.orig_h msg`
+- 10.10.57.178
+
+What is the source port of the second event?
+
+- `cat notice.log | zeek-cut id.orig_h id.orig_p msg`
+- 38712
+
+Investigate the conn.log.
+What is the total number of the sent and received packets from source port 38706?
+
+- `cat conn.log | zeek-cut id.orig_p orig_pkts resp_pkts|grep 38706`
+- 20
+
+Create the global rule shown in the task and investigate the ftp.pcap file.
+
+Investigate the notice.log. What is the number of unique events?
+
+- `cd Desktop/Exercise-Files/TASK-5/`
+- `ls -lah`
+- `cd ftp/`
+- `ls -lah`
+- `vi ftp-bruteforce.sig`
+```
+signature ftp-username {
+    ip-proto == tcp
+    ftp /.*USER.*/
+    event "FTP Username Input Found!"
+}
+
+signature ftp-brute {
+    ip-proto == tcp
+     payload /.*530.*Login.*incorrect.*/
+    event "FTP Brute-force Attempt!"
+}
+```
+- `zeek -C -r ftp.pcap -s ftp-bruteforce.sig`
+- `cat notice.log | zeek-cut uid | sort -u | wc -l`
+- `cat notice.log | zeek-cut uid | sort | uniq | wc -l`
+- 1413
+
+What is the number of ftp-brute signature matches?
+
+- `cat notice.log | zeek-cut id.orig_h id.orig_p id.resp_h id.resp_p msg |grep "Brute" | wc -l`
+- `cat notice.log | zeek-cut uid msg | grep "Brute" | wc -l`
+- 1410
+
+
+### _**Zeek Scripts | Fundamentals**_
+
