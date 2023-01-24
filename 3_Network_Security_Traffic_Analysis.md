@@ -2067,3 +2067,101 @@ What is the number of ftp-brute signature matches?
 
 ### _**Zeek Scripts | Fundamentals**_
 
+Zeek has its own event-driven scripting language, which is as powerful as high-level languages and allows us to investigate and correlate the detected events. Since it is as capable as high-level programming languages, you will need to spend time on Zeek scripting language in order to become proficient. In this room, we will cover the basics of Zeek scripting to help you understand, modify and create basic scripts. Note that scripts can be used to apply a policy and in this case, they are called policy scripts.
+
+![](2023-01-24-06-57-42.png)
+
+- Zeek scripts use the ".zeek" extension.  
+- Do not modify anything under the "zeek/base" directory. User-generated and modified scripts should be in the "zeek/site" directory.
+- You can call scripts in live monitoring mode by loading them with the command `load @/script/path` or `load @script-name` in local.zeek file.    
+- Zeek is event-oriented, not packet-oriented! We need to use/write scripts to handle the event of interest.
+
+running Zeek with signature
+
+`zeek -C -r sample.pcap -s sample.sig`
+
+**GUI vs Scripts**  
+
+Have you ever thought about automating tasks in Wireshark, tshark or tcpdump? Zeek provides that chance to us with its scripting power. Let's say we need to extract all available DHCP hostnames from a pcap file. In that case, we have several options like using tcpdump, Wireshark, tshark or Zeek. 
+
+Let's see Wireshark on the stage first. You can have the same information with Wireshark. However, while this information can be extracted using Wireshark is not easy to transfer the data to another tool for processing. Tcpdump and tshark are command-line tools, and it is easy to extract and transfer the data to another tool for processing and correlating.
+
+- extracting hostnames with tcpdump and tshark
+```
+ubuntu@ubuntu$ sudo tcpdump -ntr smallFlows.pcap port 67 or port 68 -e -vv | grep 'Hostname Option' | awk -F: '{print $2}' | sort -nr | uniq | nl
+     1	 "vinlap01"
+     2	 "student01-PC"
+ubuntu@ubuntu$ tshark -V -r smallFlows.pcap -Y "udp.port==67 or udp.port==68" -T fields -e dhcp.option.hostname | nl | awk NF
+     1	student01-PC
+     2	vinlap01
+```
+
+Now let's see Zeek scripts in action. First, let's look at the components of the Zeek script. Here the first, second and fourth lines are the predefined syntaxes of the scripting language. The only part we created is the third line which tells Zeek to extract DHCP hostnames. Now compare this automation ease with the rest of the methods. Obviously, this four-line script is easier to create and use. While tcpdump and tshark can provide similar results, transferring uncontrolled data through multiple pipelines is not much preferred.
+
+```
+event dhcp_message (c: connection, is_orig: bool, msg: DHCP::Msg, options: DHCP::Options)
+{
+print options$host_name;
+}
+```
+
+Now let's use the Zeek script and see the output.
+
+```
+ubuntu@ubuntu$ zeek -C -r smallFlows.pcap dhcp-hostname.zeek 
+student01-PC
+vinlap01
+```
+
+The provided outputs show that our script works fine and can extract the requested information. This should show why Zeek is helpful in data extraction and correlation. Note that Zeek scripting is a programming language itself, and we are not covering the fundamentals of Zeek scripting. In this room, we will cover the logic of Zeek scripting and how to use Zeek scripts. You can learn and practice the Zeek scripting language by using [Zeek's official training platform](https://try.bro.org/#/?example=hello) for free.
+
+There are multiple options to trigger conditions in Zeek. Zeek can use "Built-In Function" (Bif) and protocols to extract information from traffic data. You can find supported protocols and Bif either by looking in your setup or visiting the [Zeek repo](https://docs.zeek.org/en/master/script-reference/scripts.html).
+
+**Customized script locations**
+- /opt/zeek/share/zeek/base/bif
+- /opt/zeek/share/zeek/base/bif/plugins
+- /opt/zeek/share/zeek/base/protocols
+
+**Questions**
+
+Each exercise has a folder. Ensure you are in the right directory to find the pcap file and accompanying files. Desktop/Exercise-Files/TASK-6
+
+- `cd Desktop/Exercise-Files/TASK-6/`
+- `ls -lah`
+
+Investigate the smallFlows.pcap file. Investigate the dhcp.log file. What is the domain value of the "vinlap01" host?
+
+- `cd smallflow/`
+- `ls -lah`
+- `zeek -C -r smallFlows.pcap dhcp-hostname.zeek`
+- `ls -lah`
+- `cat dhcp.log |zeek-cut host_name domain`
+- astaro_vineyard
+
+Investigate the bigFlows.pcap file. Investigate the dhcp.log file. What is the number of identified unique hostnames?
+
+- `cd ../bigflow/`
+- `ls -lah`
+- `zeek -C -r bigFlows.pcap dhcp-hostname.zeek`
+- `ll`
+- `cat dhcp.log |zeek-cut host_name |sort -u |wc -l`
+- 17, had to remove 1 from above number because it was a dash
+- `cat dhcp.log |zeek-cut host_name |sort -u |egrep -v ^"-" |wc -l`
+- the above command gives the correct answer
+
+Investigate the dhcp.log file. What is the identified domain value?
+
+- `cat dhcp.log |zeek-cut domain |sort -u`
+- jaalam.net
+
+Investigate the dns.log file. What is the number of unique queries?
+
+- `cat dns.log |zeek-cut query |sort -u |grep -v -e "^-$" -e "\*" |wc -l`
+- 1310, had to remove 2 becase the first 2 were a dash and asterik, use below command to see this
+- `cat dns.log |zeek-cut query |sort -u |head`
+- using the hint below gives the expected answer but it is not correct for real world. It filters all lines with a `-` in them.
+- `cat dns.log |zeek-cut query |sort -u |grep -v -e "*" -e "-" |wc -l`
+- 1109
+
+### _**Zeek Scripts | Scripts and Signatures**_
+
