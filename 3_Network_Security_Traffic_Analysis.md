@@ -2542,5 +2542,125 @@ Investigate the case1.pcap file with file-extract-demo.zeek script. Investigate 
 
 ### _**Zeek Scripts | Packages**_
 
-test
-test2
+_Scripts 204 | Package Manager_
+
+Zeek Package Manager helps users install third-party scripts and plugins to extend Zeek functionalities with ease. The package manager is installed with Zeek and available with the `zkg` command. Users can install, load, remove, update and create packages with the "zkg" tool. You can read more on and view available packages [here](https://packages.zeek.org/) and [here](https://github.com/zeek/packages). Please note that you need root privileges to use the "zkg" tool.  
+
+**Basic usage of zkg**
+
+![](2023-01-27-06-39-38.png)
+
+There are multiple ways of using packages. The first approach is using them as frameworks and calling specific package path/directory per usage. The second and most common approach is calling packages from a script with the "@load" method. The third and final approach to using packages is calling their package names; note that this method works only for packages installed with the "zkg" install method.   
+
+_Packages | Cleartext Submission of Password_  
+
+Let's install a package first and then demonstrate the usage in different approaches.   
+Note: The package is installed in the given VM.
+
+```
+# Install package with zkg
+
+ubuntu@ubuntu$ zkg install zeek/cybera/zeek-sniffpass
+The following packages will be INSTALLED:
+  zeek/cybera/zeek-sniffpass (master)
+Proceed? [Y/n] Y
+Installing "zeek/cybera/zeek-sniffpass"
+Installed "zeek/cybera/zeek-sniffpass" (master)
+Loaded "zeek/cybera/zeek-sniffpass"
+
+ubuntu@ubuntu$ zkg list
+zeek/cybera/zeek-sniffpass (installed: master) - Sniffpass will alert on cleartext passwords discovered in HTTP POST requests
+```
+
+The above output shows how to install and list the installed packages. Now we successfully installed a package. As the description mentions on the above terminal, this package creates alerts for cleartext passwords found in HTTP traffic. Let's use this package in three different ways!
+
+```
+# Execute/load package
+
+### Calling with script
+ubuntu@ubuntu$ zeek -Cr http.pcap sniff-demo.zeek 
+
+### View script contents
+ubuntu@ubuntu$ cat sniff-demo.zeek 
+@load /opt/zeek/share/zeek/site/zeek-sniffpass
+
+### Calling from path
+ubuntu@ubuntu$ zeek -Cr http.pcap /opt/zeek/share/zeek/site/zeek-sniffpass
+
+### Calling with package name
+ubuntu@ubuntu$ zeek -Cr http.pcap zeek-sniffpass 
+```
+
+The above output demonstrates how to execute/load packages against a pcap. You can use the best one for your case. The "zeek-sniffpass" package provides additional information in the notice.log file. Now let's review the logs and discover the obtained data using the specific package.
+
+```
+# Investigate log files
+
+ubuntu@ubuntu$ cat notice.log | zeek-cut id.orig_h id.resp_h proto note msg
+10.10.57.178	44.228.249.3	tcp	SNIFFPASS::HTTP_POST_Password_Seen	Password found for user BroZeek
+10.10.57.178	44.228.249.3	tcp	SNIFFPASS::HTTP_POST_Password_Seen	Password found for user ZeekBro
+```
+
+The above output shows that the package found cleartext password submissions, provided notice, and grabbed the usernames. Remember, in TASK-5 we created a signature to do the same action. Now we can do the same activity without using a signature file. This is a simple demonstration of the benefit and flexibility of the Zeek scripts.
+
+_Packages | Geolocation Data_
+
+Let's use another helpful package called "geoip-conn". This package provides geolocation information for the IP addresses in the conn.log file. It depends on "GeoLite2-City.mmdb" database created by MaxMind. This package provides location information for only matched IP addresses from the internal database.
+
+```
+# Execute/load package
+
+ubuntu@ubuntu$ zeek -Cr case1.pcap geoip-conn
+
+ubuntu@ubuntu$ cat conn.log | zeek-cut uid id.orig_h id.resp_h geo.orig.country_code geo.orig.region geo.orig.city geo.orig.latitude geo.orig.longitude geo.resp.country_code geo.resp.region geo.resp.city                                                  
+Cbk46G2zXi2i73FOU6	10.6.27.102	23.63.254.163	-	-	-	-	-	US	CA	Los Angeles
+```
+
+Up to now, we've covered what the Zeek packages are and how to use them. There are many more packages and scripts available for Zeek in the wild. You can try ready or third party packages and scripts or learn Zeek scripting language and create new ones.
+
+**Questions**
+
+Each exercise has a folder. Ensure you are in the right directory to find the pcap file and accompanying files. Desktop/Exercise-Files/TASK-9
+
+- `cd Desktop/Exercise-Files/TASK-9/`
+- `ll` or `ls -lah`
+
+Investigate the http.pcap file with the zeek-sniffpass module. Investigate the notice.log file. Which username has more module hits?
+
+- `cd cleartext-pass/`
+- `ll`
+- `zeek -Cr http.pcap zeek-sniffpass`
+- `ll`
+- `cat notice.log | zeek-cut id.orig_h id.resp_h proto note msg`
+- BroZeek
+
+Investigate the case2.pcap file with geoip-conn module. Investigate the conn.log file. What is the name of the identified City?
+
+- `cd ../geoip-conn/`
+- `ll`
+- `zeek -Cr case2.pcap geoip-conn`
+- `ll`
+- `cat conn.log | zeek-cut uid id.orig_h id.resp_h geo.orig.country_code geo.orig.region geo.orig.city geo.orig.latitude geo.orig.longitude geo.resp.country_code geo.resp.region geo.resp.city`
+- Chicago
+
+Which IP address is associated with the identified City?
+
+- 23.77.86.54
+
+Investigate the case2.pcap file with sumstats-counttable.zeek script. How many types of status codes are there in the given traffic capture?
+
+- `./clear-logs.sh`
+- `ll`
+- `zeek -Cr case2.pcap sumstats-counttable.zeek`
+- 4
+
+## **--Zeek Exercises--**
+
+### _**Introduction**_
+
+The room challenges you to investigate a series of traffic data and stop malicious activity under different scenarios. Let's start working with Zeek to analyse the captured traffic.  
+
+We recommend completing the [**Zeek**](https://tryhackme.com/room/zeekbro) room first, which will teach you how to use the tool in depth.
+
+### _**Anomalous DNS**_
+
