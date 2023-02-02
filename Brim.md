@@ -312,3 +312,77 @@ There is an additional C2 channel in used the given case. What is the name of th
 
 ## _**7: Exercise: Threat Hunting with Brim | Crypto Mining**_
 
+Cryptocurrencies are frequently on the agenda with their constantly rising value and legal aspect. The ability to obtain cryptocurrencies by mining other than purchasing is becoming one of the biggest problems in today's corporate environments. Attackers not only compromise the systems and ask for a ransom, but sometimes they also install mining tools (cryptojacking). Other than the attackers and threat actors, sometimes internal threats and misuse of trust and privileges end up installing coin miners in the corporate environment.
+
+Usually, mining cases are slightly different from traditional compromising activities. Internal attacks don't typically contain major malware samples. However, this doesn't mean they aren't malicious as they are exploiting essential corporate resources like computing power, internet, and electricity. Also, crypto mining activities require third party applications and tool installations which could be vulnerable or create backdoors. Lastly, mining activities are causing network performance and stability problems. Due to these known facts, coin mining is becoming one of the common use cases of threat hunters.
+
+Now, open Brim, import the Task 7 sample pcap and go through the walkthrough.
+
+Let's investigate a traffic sample to detect a coin mining activity!
+
+Let's look at the available logfiles first to see what kind of data artefact we could have. The image on the left shows that we don't have many alternative log files we could rely on. Let's review the frequently communicated hosts to see if there is an anomaly indicator.   
+
+**Query:** `cut id.orig_h, id.resp_p, id.resp_h | sort  | uniq -c | sort -r`
+
+**Query:** `_path=="conn" | cut id.orig_h, id.resp_p, id.resp_h | sort  | uniq -c | sort -r count`
+
+This query provided sufficient data that helped us decide where to focus. The IP address "192.168.xx" draws attention in the first place. Let's look at the port numbers and available services before focusing on the suspicious IP address and narrowing our search.
+
+**Query:** `_path=="conn" | cut id.resp_p, service | sort | uniq -c | sort -r count`
+
+There is multiple weird port usage, and this is not usual. Now, we are one step closer to the identification of the anomaly. Let's look at the transferred data bytes to support our findings and find more indicators.
+
+**Query:** `_path=="conn" | put total_bytes := orig_bytes + resp_bytes | sort -r total_bytes | cut uid, id, orig_bytes, resp_bytes, total_bytes`
+
+The query result proves massive traffic originating from the suspicious IP address. The detected IP address is suspicious. However, we don't have many supportive log files to correlate our findings and detect accompanying activities. At this point, we will hunt the low hanging fruits with the help of Suricata rules. Let's investigate the Suricata logs.  
+**Query:** `event_type=="alert" | count() by alert.severity,alert.category | sort count`
+
+Suricata rules have helped us conclude our hunt quickly, as the alerts tell us we are investigating a "Crypto Currency Mining" activity. Let's dig deeper and discover which data pool is used for the mining activity. First, we will list the associated connection logs with the suspicious IP, and then we will run a VirusTotal search against the destination IP.
+
+**Query:** `_path=="conn" | 192.168.1.100`
+
+[VirusTotal](https://www.virustotal.com/gui/ip-address/103.3.62.64/relations) : search for the IP using port 9999/6666
+
+We investigated the first destination IP address and successfully identified the mining server. In real-life cases, you may need to investigate multiple IP addresses to find the event of interest.
+
+Lastly, let's use Suricata logs to discover mapped out MITRE ATT&CK techniques.
+
+**Query:** `event_type=="alert" | cut alert.category, alert.metadata.mitre_technique_name, alert.metadata.mitre_technique_id, alert.metadata.mitre_tactic_name | sort | uniq -c`
+
+Now we can identify the mapped out MITRE ATT&CK details as shown in the table below.
+
+<table class="table table-bordered"><tbody><tr><td style="text-align:center"><span style="font-weight:bolder">Suricata Category</span><br></td><td style="text-align:center"><span style="font-weight:bolder"><span><a class="er4cLIJs glossary-term" onclick="initPopOver('MITRE', 'er4cLIJs')" href="">MITRE</a> Technique Name</span></span><br></td><td style="text-align:center"><span style="font-weight:bolder"><span><a class="q5k826r0 glossary-term" onclick="initPopOver('MITRE', 'q5k826r0')" href="">MITRE</a> Technique Id</span></span><br></td><td style="text-align:center"><span style="font-weight:bolder"><span><a class="GBRJTOLB glossary-term" onclick="initPopOver('MITRE', 'GBRJTOLB')" href="">MITRE</a> Tactic Name</span></span><br></td></tr><tr><td style="text-align:center">Crypto Currency Mining<br></td><td style="text-align:center">Resource_Hijacking<br></td><td style="text-align:center">T1496<br></td><td style="text-align:center">Impact<br></td></tr></tbody></table>
+
+This concludes our hunt for the given case. Now, repeat this exercise in the attached VM and ask the questions below.
+
+**Questions**
+
+How many connections used port 19999?
+
+- `_path=="conn" | cut id.resp_p, service | sort | uniq -c | sort -r count`
+- 22
+
+What is the name of the service used by port 6666?
+
+- `_path=="conn" | cut id.resp_p, service | sort | uniq -c | sort -r count`
+- irc
+
+What is the amount of transferred total bytes to "101.201.172.235:8888"?
+
+- `_path=="conn" id.resp_h==101.201.172.235 | put total_bytes := orig_bytes + resp_bytes | sort -r total_bytes | cut uid, id, orig_bytes, resp_bytes, total_bytes`
+- 3,729
+
+What is the detected MITRE tactic id?
+
+- Search for the Mitre Tactic ID
+- `event_type=="alert" | cut alert.category, alert.metadata.mitre_technique_name, alert.metadata.mitre_tactic_id, alert.metadata.mitre_technique_id, alert.metadata.mitre_tactic_name | sort | uniq -c`
+- TA0040
+
+## _**8: Conclusion**_
+
+Congratulations! You just finished the Brim room.  
+
+In this room, we covered Brim, what it is, how it operates, and how to use it to investigate threats. 
+
+Now, we invite you to complete the Brim challenge room: [**Masterminds**](https://tryhackme.com/room/mastermindsxlq)
+
