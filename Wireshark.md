@@ -313,5 +313,77 @@ What is the name of the second artist?
 
 In this room, we will cover the fundamentals of packet analysis with Wireshark and investigate the event of interest at the packet-level. Note that this is the second room of the Wireshark room trio, and it is suggested to visit the first room ([**Wireshark: The Basics**](https://tryhackme.com/room/wiresharkthebasics)) to practice and refresh your Wireshark skills before starting this one.
 
-In the first room, we covered the basics of the Wireshark by focusing on how it operates and how to use it to investigate traffic captures. In this room, we will cover advanced features of the Wireshark by focusing on packet-level details with Wireshark statistics, filters, operators and functions.
+In the first room, we covered the basics of Wireshark by focusing on how it operates and how to use it to investigate traffic captures. In this room, we will cover advanced features of Wireshark by focusing on packet-level details with Wireshark statistics, filters, operators and functions.
+
+## _**2: Statistics | Summary**_
+
+**Statistics**
+
+This menu provides multiple statistics options ready to investigate to help users see the big picture in terms of the scope of the traffic, available protocols, endpoints and conversations, and some protocol-specific details like DHCP, DNS and HTTP/2. For a security analyst, it is crucial to know how to utilise the statical information. This section provides a quick summary of the processed pcap, which will help analysts create a hypothesis for an investigation. You can use the **"Statistics"** menu to view all available options. Now start the given VM, open the Wireshark, load the "Exercise.pcapng" file and go through the walkthrough.
+
+**Resolved Addresses**
+
+This option helps analysts identify IP addresses and DNS names available in the capture file by providing the list of the resolved addresses and their hostnames. Note that the hostname information is taken from DNS answers in the capture file. Analysts can quickly identify the accessed resources by using this menu. Thus they can spot accessed resources and evaluate them according to the event of interest. You can use the **"Statistics --> Resolved Addresses"** menu to view all resolved addresses by Wireshark.
+
+**Protocol Hierarchy**
+
+This option breaks down all available protocols from the capture file and helps analysts view the protocols in a tree view based on packet counters and percentages. Thus analysts can view the overall usage of the ports and services and focus on the event of interest. The golden rule mentioned in the previous room is valid in this section; you can right-click and filter the event of interest. You can use the **"Statistics --> Protocol Hierarchy"** menu to view this info.
+
+**Conversations**
+
+Conversation represents traffic between two specific endpoints. This option provides the list of the conversations in five base formats; ethernet, IPv4, IPv6, TCP and UDP. Thus analysts can identify all conversations and contact endpoints for the event of interest. You can use the **"Statistic --> Conversations"** menu to view this info.
+
+Endpoints
+
+The endpoints option is similar to the conversations option. The only difference is that this option provides unique information for a single information field (Ethernet, IPv4, IPv6, TCP and UDP ). Thus analysts can identify the unique endpoints in the capture file and use it for the event of interest. You can use the **"Statistics --> Endpoints"** menu to view this info.
+
+Wireshark also supports resolving MAC addresses to human-readable format using the manufacturer name assigned by IEEE. Note that this conversion is done through the first three bytes of the MAC address and only works for the known manufacturers. When you review the ethernet endpoints, you can activate this option with the **"Name resolution"** button in the lower-left corner of the endpoints window.
+
+Name resolution is not limited only to MAC addresses. Wireshark provides IP and port name resolution options as well. However, these options are not enabled by default. If you want to use these functionalities, you need to activate them through the **"Edit --> Preferences --> Name Resolution"** menu. Once you enable IP and port name resolution, you will see the resolved IP address and port names in the packet list pane and also will be able to view resolved names in the "Conversations" and "Endpoints" menus as well.
+
+Besides name resolution, Wireshark also provides an IP geolocation mapping that helps analysts identify the map's source and destination addresses. But this feature is not activated by default and needs supplementary data like the GeoIP database. Currently, Wireshark supports MaxMind databases, and the latest versions of the Wireshark come configured MaxMind DB resolver. However, you still need MaxMind DB files and provide the database path to Wireshark by using the **"Edit --> Preferences --> Name Resolution --> MaxMind database directories"** menu. Once you download and indicate the path, Wireshark will automatically provide GeoIP information under the IP protocol details for the matched IP addresses.
+
+Endpoints and GeoIP view.
+
+![](2023-02-06-06-49-03.png)
+
+**Note:** You need an active internet connection to view the GeoIP map.
+
+**Questions**
+
+Investigate the resolved addresses. What is the IP address of the hostname starts with "bbc"?
+
+- open Wireshark
+- File -> Open -> Exercise.pcapng
+- Statistics -> Resolved Addresses
+- Search for entry (min 3 characters) -> bbc
+- 199.232.24.81
+
+What is the number of IPv4 conversations?
+
+- Statistics -> Conversations -> IPv4 tab
+- 435
+
+How many bytes (k) were transferred from the "Micro-St" MAC address?
+
+- Statistics -> Endpoints -> Name resolution
+- Micro-St 9a:f1:f5 -> Tx Bytes column
+- 1083
+- Try Hack Me wants the Total Bytes
+- Micro-St 9a:f1:f5 -> Bytes column
+- 7474
+
+What is the number of IP addresses linked with "Kansas City"?
+
+- Statistics -> Endpoints -> Name resolution
+- IPv4 tab -> City column -> Kansas City
+- 4
+
+Which IP address is linked with "Blicnet" AS Organisation?
+
+- Statistics -> Endpoints
+- IPv4 tab -> AS Organization column -> double click column name to sort -> hi-light Blicnet d.o.o.
+- 188.246.82.7
+
+## _**3: Statistics | Protocol Details**_
 
