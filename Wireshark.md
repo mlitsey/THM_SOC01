@@ -387,3 +387,36 @@ Which IP address is linked with "Blicnet" AS Organisation?
 
 ## _**3: Statistics | Protocol Details**_
 
+**IPv4 and IPv6**
+
+Up to here, almost all options provided information that contained both versions of the IP addresses. The statistics menu has two options for narrowing the statistics on packets containing a specific IP version. Thus, analysts can identify and list all events linked to specific IP versions in a single window and use it for the event of interest. You can use the **"Statistics --> IPvX Statistics"** menu to view this info.
+
+**DNS**
+
+This option breaks down all DNS packets from the capture file and helps analysts view the findings in a tree view based on packet counters and percentages of the DNS protocol. Thus analysts can view the DNS service's overall usage, including rcode, opcode, class, query type, service and query stats and use it for the event of interest. You can use the **"Statistics --> DNS"** menu to view this info.
+
+**HTTP**
+
+This option breaks down all HTTP packets from the capture file and helps analysts view the findings in a tree view based on packet counters and percentages of the HTTP protocol. Thus analysts can view the HTTP service's overall usage, including request and response codes and the original requests. You can use the **"Statistics --> HTTP"** menu to view this info.
+
+**Questions**
+
+What is the most used IPv4 destination address?
+
+- Open Wireshark
+- Open file Exercise.pcapng on desktop
+- Statistics -> IPv4 Statistics -> Destinations and Ports -> double click Count column to sort
+- 10.100.1.33 with 29387
+
+What is the max service request-response time of the DNS packets?
+
+- Statistics -> DNS -> On the Topic/Item column look for Service Stats -> expand and look for request-response time (secs) and hi-light it -> look at the Max val column
+- 0.467897
+
+What is the number of HTTP Requests accomplished by "rad[.]msn[.]com?
+
+- Statistics -> HTTP -> Requests -> look under Topic/Item for the above web site and hi-light it -> scroll right to Count column
+- 39
+
+## _**Packet Filtering | Principles**_
+
