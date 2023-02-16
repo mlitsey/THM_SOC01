@@ -455,14 +455,7 @@ Wireshark has a built-in option (Display Filter Expression) that stores all supp
 
 You can create display filters by using different comparison operators to find the event of interest. The primary operators are shown in the table below.
 
-|
-|English| C-Like| Description| Example|
-|eq|==|Equal|`ip.src == 10.10.10.100`|
-|ne|!=|Not equal|`ip.src != 10.10.10.100`|
-|gt|>|Greater than|`ip.ttl > 250`|
-|lt|<|Less Than|`ip.ttl < 10`  |
-|ge|>=|Greater than or equal to|`ip.ttl >= 0xFA`|
-|le|<=|Less than or equal to|`ip.ttl <= 0xA`|
+<table class="table table-bordered"><tbody><tr><td><b>English</b></td><td><b>C-Like</b></td><td><b>Description</b></td><td><b>Example</b></td></tr><tr><td>eq</td><td>==</td><td>Equal</td><td><p><code>ip.src == 10.10.10.100</code></p></td></tr><tr><td>ne</td><td>!=</td><td>Not equal</td><td><p><code>ip.src != 10.10.10.100</code></p></td></tr><tr><td>gt</td><td>&gt;</td><td>Greater than</td><td><p><code>ip.ttl &gt; 250</code></p></td></tr><tr><td>lt</td><td>&lt;</td><td>Less Than</td><td><p><code>ip.ttl &lt; 10</code><br></p></td></tr><tr><td>ge</td><td>&gt;=</td><td>Greater than or equal to</td><td><p><code>ip.ttl &gt;= 0xFA</code></p></td></tr><tr><td>le</td><td>&lt;=</td><td>Less than or equal to</td><td><p><code>ip.ttl &lt;= 0xA</code></p></td></tr></tbody></table>
 
 **Note:** Wireshark supports decimal and hexadecimal values in filtering. You can use any format you want according to the search you will conduct.
 
@@ -470,11 +463,7 @@ You can create display filters by using different comparison operators to find t
 
 Wireshark supports boolean syntax. You can create display filters by using logical operators as well.
 
-|
-|English| C-Like| Description| Example|
-|and|&&|Logical AND|`(ip.src == 10.10.10.100) AND (ip.src == 10.10.10.111)`|
-|or| \|\| |Logical OR|`(ip.src == 10.10.10.100) OR (ip.src == 10.10.10.111)`|
-|not|!|Logical NOT|`!(ip.src == 10.10.10.222)`| 
+<table class="table table-bordered"><tbody><tr><td><b>English&nbsp;&nbsp;</b></td><td><b>C-Like</b></td><td><b>Description&nbsp;&nbsp;</b></td><td><b>Example</b></td></tr><tr><td>and</td><td>&amp;&amp;</td><td>Logical AND</td><td><p><code>(ip.src == 10.10.10.100) AND (ip.src == 10.10.10.111)</code></p></td></tr><tr><td>or</td><td>||</td><td>Logical OR</td><td><p><code>(ip.src == 10.10.10.100) OR (ip.src == 10.10.10.111)</code></p></td></tr><tr><td>not</td><td>!</td><td>Logical NOT</td><td><p><code>!(ip.src == 10.10.10.222)</code></p><p style="text-align:left"><b>Note:</b>&nbsp;Usage of <code>!=value</code>&nbsp;is deprecated; using it could provide inconsistent results. Using the <code>!(value)</code><b></b>&nbsp;style is suggested for more consistent results.</p></td></tr></tbody></table> 
 
 **Note:** Usage of `!=value` is deprecated; using it could provide inconsistent results. Using the `!(value)` style is suggested for more consistent results.
 
@@ -504,35 +493,19 @@ IP filters help analysts filter the traffic according to the IP level informatio
 
 The common filters are shown in the given table.
 
-|
-|Filter|Description|
-|`ip`|Show all IP packets.|
-|`ip.addr == 10.10.10.111`|Show all packets containing IP address 10.10.10.111.|
-|`ip.addr == 10.10.10.0/24`|Show all packets containing IP addresses from 10.10.10.0/24 subnet.|
-|`ip.src == 10.10.10.111`|Show all packets originated from 10.10.10.111|
-|`ip.dst == 10.10.10.111`|Show all packets sent to 10.10.10.111|
-|`ip.addr` vs `ip.src/ip.dst`|Note: The ip.addr filters the traffic without considering the packet direction. The ip.src/ip.dst filters the packet depending on the packet direction.|
+<table class="table table-bordered" style="width:1075px"><tbody><tr><td><span style="font-weight:bolder">Filter</span></td><td><span style="font-weight:bolder">Description</span></td></tr><tr><td><p><code style="font-size:14px">ip</code></p></td><td style="text-align:left">Show all IP packets.</td></tr><tr><td><p><code style="font-size:14px">ip.addr == 10.10.10.111</code></p></td><td style="text-align:left">Show all packets containing IP address 10.10.10.111.</td></tr><tr><td><p><code style="font-size:14px">ip.addr == 10.10.10.0/24</code></p></td><td style="text-align:left">Show all packets containing IP addresses from 10.10.10.0/24 subnet.</td></tr><tr><td><p><code style="font-size:14px">ip.src == 10.10.10.111</code></p></td><td style="text-align:left">Show all packets originated from 10.10.10.111</td></tr><tr><td><p><code style="font-size:14px">ip.dst == 10.10.10.111</code></p></td><td style="text-align:left">Show all packets sent to 10.10.10.111</td></tr><tr><td>ip.addr<span style="font-weight:bolder">&nbsp;vs&nbsp;</span>ip.src/ip.dst</td><td style="text-align:left"><span style="font-weight:bolder">Note:&nbsp;</span>The ip.addr filters the traffic without considering the packet direction. The ip.src/ip.dst filters the packet depending on the packet direction.</td></tr></tbody></table>
 
 **TCP and UDP Filters**
 
 TCP filters help analysts filter the traffic according to protocol-level information from the packets (Transport layer of the OSI model). These filters filter transport protocol level information like source and destination ports, sequence number, acknowledgement number, windows size, timestamps, flags, length and protocol errors.
 
-|
-|Filter|Description|Filter|Description|
-|`tcp.port == 80`|Show all TCP packets with port 80|`udp.port == 53`|Show all UDP packets with port 53|
-|`tcp.srcport == 1234`|Show all TCP packets originating from port 1234|`udp.srcport == 1234`|Show all UDP packets originating from port 1234|
-|`tcp.dstport == 80`|Show all TCP packets sent to port 80|`udp.dstport == 5353`|Show all UDP packets sent to port 5353|
+<table class="table table-bordered" style="width:1075px"><tbody><tr><td><span style="font-weight:700">Filter</span><br></td><td><span style="font-weight:700">Description</span><br></td><td><span style="font-weight:bolder">Filter</span></td><td><span style="font-weight:bolder">Expression</span></td></tr><tr><td><p><code style="font-size:14px">tcp.port == 80</code></p></td><td style="text-align:left"><span>Show all <a class="abpUH7Hi glossary-term" onclick="initPopOver('TCP', 'abpUH7Hi')" href="">TCP</a> packets with port 80&nbsp;</span></td><td><p><code style="font-size:14px">udp.port == 53</code><br></p></td><td style="text-align:left"><span>Show all <a class="Ra5uVuWI glossary-term" onclick="initPopOver('UDP', 'Ra5uVuWI')" href="">UDP</a> packets with port 53</span></td></tr><tr><td><p><code style="font-size:14px">tcp.srcport == 1234</code></p></td><td style="text-align:left"><span>Show all <a class="3ry0shFU glossary-term" onclick="initPopOver('TCP', '3ry0shFU')" href="">TCP</a> packets originating from port 1234</span></td><td><p><code style="font-size:14px">udp.srcport == 1234</code><br></p></td><td style="text-align:left"><span>Show all <a class="TECyYkn5 glossary-term" onclick="initPopOver('UDP', 'TECyYkn5')" href="">UDP</a> packets originating from port 1234</span></td></tr><tr><td><p><code style="font-size:14px">tcp.dstport == 80</code></p></td><td style="text-align:left"><span>Show all <a class="fJxKiHm9 glossary-term" onclick="initPopOver('TCP', 'fJxKiHm9')" href="">TCP</a> packets sent to port 80</span></td><td><p><code style="font-size:14px">udp.dstport == 5353</code><br></p></td><td style="text-align:left"><span>Show all <a class="TFgdUnow glossary-term" onclick="initPopOver('UDP', 'TFgdUnow')" href="">UDP</a> packets sent to port 5353</span></td></tr></tbody></table>
 
 **Application Level Protocol Filters | HTTP and DNS**
 
 Application-level protocol filters help analysts filter the traffic according to application protocol level information from the packets (Application layer of the OSI model ). These filters filter application-specific information, like payload and linked data, depending on the protocol type.
 
-|
-|Filter|Description|Filter|Description|
-|`http`|Show all HTTP packets|`dns`|Show all DNS packets|
-|`http.response.code == 200`|Show all packets with HTTP response code "200"|`dns.flags.response == 0`|Show all DNS requests|
-|`http.request.method == "GET"`|Show all HTTP GET requests|`dns.flags.response == 1`|Show all DNS responses|
-|`http.request.method == "POST"`|Show all HTTP POST requests|`dns.qry.type == 1`|Show all DNS "A" records|
+<table class="table table-bordered" style="width:1075px"><tbody><tr><td><span style="font-weight:bolder">Filter</span></td><td><span style="font-weight:bolder">Description</span></td><td><span style="font-weight:bolder">Filter</span></td><td><span style="font-weight:bolder">Description</span></td></tr><tr><td><p><code style="font-size:14px">http</code></p></td><td><span>Show all <a class="eNzu48rH glossary-term" onclick="initPopOver('HTTP', 'eNzu48rH')" href="">HTTP</a> packets</span></td><td><p><code style="font-size:14px">dns</code></p></td><td><span>Show all <a class="fUc1Jt3v glossary-term" onclick="initPopOver('DNS', 'fUc1Jt3v')" href="">DNS</a> packets</span></td></tr><tr><td><p><code style="font-size:14px">http.response.code == 200</code></p></td><td><span>Show all packets with <a class="hQfaeiyX glossary-term" onclick="initPopOver('HTTP', 'hQfaeiyX')" href="">HTTP</a> response code "200"</span></td><td><p><code style="font-size:14px">dns.flags.response == 0</code><br></p></td><td><span>Show all <a class="IAFnV9dO glossary-term" onclick="initPopOver('DNS', 'IAFnV9dO')" href="">DNS</a> requests</span></td></tr><tr><td><p><code style="font-size:14px">http.request.method == "GET"</code></p></td><td><span>Show all <a class="G4fHoeAd glossary-term" onclick="initPopOver('HTTP', 'G4fHoeAd')" href="">HTTP</a> GET requests</span></td><td><p><code style="font-size:14px">dns.flags.response == 1</code><br></p></td><td><span>Show all <a class="7E5Esef1 glossary-term" onclick="initPopOver('DNS', '7E5Esef1')" href="">DNS</a> responses</span></td></tr><tr><td><p><code style="font-size:14px">http.request.method == "POST"</code><br></p></td><td><span>Show all <a class="Mfgt8Ego glossary-term" onclick="initPopOver('HTTP', 'Mfgt8Ego')" href="">HTTP</a> POST requests</span></td><td><p><code style="font-size:14px">dns.qry.type == 1</code><br></p></td><td><span>Show all <a class="4VmtI1sk glossary-term" onclick="initPopOver('DNS', '4VmtI1sk')" href="">DNS</a> "A" records</span></td></tr></tbody></table>
 
 **Display Filter Expressions**
 
@@ -594,63 +567,27 @@ So far, you have learned the basics of packet filtering operations. Now it is ti
 
 **Filter: "contains"**
 
-|
-|Filter|**contains**|
-|**Type**|Comparison Operator|
-|**Description**|Search a value inside packets. It is case-sensitive and provides similar functionality to the "Find" option by focusing on a specific field.|
-|**Example**|Find all "Apache" servers.|
-|**Workflow**|List all HTTP packets where packets' "server" field contains the "Apache" keyword.|
-|**Usage**|`http.server contains "Apache"`|
+<table class="table table-bordered"><tbody><tr><td style="text-align:center"><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>contains</b></span><br></td></tr><tr><td style="text-align:center"><b>Type</b></td><td style="text-align:left"><span style="text-align:center">Comparison Operator</span><br></td></tr><tr><td style="text-align:center"><b>Description</b></td><td style="text-align:left">Search a value inside packets. It is case-sensitive and provides similar functionality to the "Find" option by focusing on a specific field.<br></td></tr><tr><td style="text-align:center"><b>Example</b></td><td style="text-align:left">Find all "Apache" servers.<br></td></tr><tr><td style="text-align:center"><b>Workflow</b></td><td style="text-align:left"><span>List all <a class="MnOJgyHX glossary-term" onclick="initPopOver('HTTP', 'MnOJgyHX')" href="">HTTP</a> packets where packets' "server" field contains the "Apache" keyword.</span><br></td></tr><tr><td style="text-align:center"><b>Usage</b></td><td><p style="text-align:left"><code>http.server contains "Apache"</code></p></td></tr></tbody></table>
 
 **Filter: "matches"**
 
-|
-|Filter|**matches**|
-|**Type**|Comparison Operator  |
-|**Description**|Search a pattern of a regular expression. It is case insensitive, and complex queries have a margin of error.  |
-|**Example**|Find all .php and .html pages.|  
-|**Workflow**|List all HTTP packets where packets' "host" fields match keywords ".php" or ".html".  |
-|**Usage**|`http.host matches "\.(php|html)"`|
+<table class="table table-bordered" style="width:1075.56px"><tbody><tr><td><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>matches</b></span><br></td></tr><tr><td><span style="font-weight:bolder">Type</span></td><td style="text-align:left"><span style="text-align:center">Comparison Operator</span><br></td></tr><tr><td><span style="font-weight:bolder">Description</span></td><td style="text-align:left">Search a pattern of a regular expression. It is case insensitive, and complex queries have a margin of error.<br></td></tr><tr><td><b>Example</b></td><td style="text-align:left">Find all .php and .html pages.<br></td></tr><tr><td><span style="font-weight:bolder">Workflow</span></td><td style="text-align:left">List all&nbsp;<a class="piGtAY8A glossary-term" href="">HTTP</a>&nbsp;packets where packets' "host" fields match keywords ".php" or ".html".<br></td></tr><tr><td><b>Usage</b></td><td style="text-align:left"><p><code>http.host matches "\.(php|html)"</code></p></td></tr></tbody></table>
 
 **Filter: "in"**
 
-|
-|Filter  |**in**  |
-|**Type** |Set Membership  |
-|**Description**|Search a value or field inside of a specific scope/range.  |
-|**Example**|Find all packets that use ports 80, 443 or 8080.  |
-|**Workflow**|List all TCP packets where packets' "port" fields have values 80, 443 or 8080.  |
-|**Usage**|`tcp.port in {80 443 8080}`|
+<table class="table table-bordered" style="width:1075.56px"><tbody><tr><td><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>in</b></span><br></td></tr><tr><td><span style="font-weight:bolder">Type</span></td><td style="text-align:left"><span style="text-align:center">&nbsp;Set Membership</span><br></td></tr><tr><td><span style="font-weight:bolder">Description</span></td><td style="text-align:left">Search a value or field inside of a specific scope/range.<br></td></tr><tr><td><span style="font-weight:bolder">Example</span></td><td style="text-align:left">Find all packets that use ports 80, 443 or 8080.<br></td></tr><tr><td><span style="font-weight:bolder">Workflow</span></td><td style="text-align:left"><span>List all <a class="MOSoT23R glossary-term" onclick="initPopOver('TCP', 'MOSoT23R')" href="">TCP</a> packets where packets' "port" fields have values 80, 443 or 8080.</span><br></td></tr><tr><td><span style="font-weight:bolder">Usage</span></td><td style="text-align:left"><p><code>tcp.port in {80 443 8080}</code></p></td></tr></tbody></table>
 
 **Filter: "upper"**
 
-|
-|Filter  |**upper**  |
-|**Type**|Function  |
-|**Description**|Convert a string value to uppercase.|
-|**Example**|Find all "APACHE" servers.  |
-|**Workflow**|Convert all HTTP packets' "server" fields to uppercase and list packets that contain the "APACHE" keyword.  |
-|**Usage**|`upper(http.server) contains "APACHE"`|
+<table class="table table-bordered" style="width:1075.56px"><tbody><tr><td><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>upper</b></span><br></td></tr><tr><td><span style="font-weight:bolder">Type</span></td><td style="text-align:left"><span style="text-align:center">Function</span><br></td></tr><tr><td><span style="font-weight:bolder">Description</span></td><td style="text-align:left">Convert a string value to uppercase.<br></td></tr><tr><td><span style="font-weight:bolder">Example</span></td><td style="text-align:left">Find all "APACHE" servers.<br></td></tr><tr><td><span style="font-weight:bolder">Workflow</span></td><td style="text-align:left">Convert all&nbsp;<a class="Y3FkDOGg glossary-term" href="">HTTP</a>&nbsp;packets' "server" fields to uppercase and list packets that contain the "APACHE" keyword.<br></td></tr><tr><td><span style="font-weight:bolder">Usage</span></td><td style="text-align:left"><p><code>upper(http.server) contains "APACHE"</code></p></td></tr></tbody></table>
 
 **Filter: "lower"**
 
-|
-|Filter  |**lower**  |
-|**Type**|Function  |
-|**Description**|Convert a string value to lowercase.|
-|**Example**|Find all "apache" servers.|
-|**Workflow**|Convert all HTTP packets' "server" fields info to lowercase and list packets that contain the "apache" keyword.  |
-|**Usage**|`lower(http.server) contains "apache"`|
+<table class="table table-bordered" style="width:1075.56px"><tbody><tr><td><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>lower</b></span><br></td></tr><tr><td><span style="font-weight:bolder">Type</span></td><td style="text-align:left"><span style="text-align:center">Function</span><br></td></tr><tr><td><span style="font-weight:bolder">Description</span></td><td style="text-align:left">Convert a string value to lowercase.<br></td></tr><tr><td><span style="font-weight:bolder">Example</span></td><td style="text-align:left">Find all "apache" servers.<br></td></tr><tr><td><span style="font-weight:bolder">Workflow</span></td><td style="text-align:left">Convert all&nbsp;<a class="Q3BlQNOG glossary-term" href="">HTTP</a>&nbsp;packets' "server" fields info to lowercase and list packets that contain the "apache" keyword.<br></td></tr><tr><td><b>Usage</b></td><td style="text-align:left"><p><code>lower(http.server) contains "apache"</code></p></td></tr></tbody></table>
 
 **Filter: "string"**
 
-|
-|Filter  |**string**  |
-|**Type**|Function  |
-|**Description**|Convert a non-string value to a string.  |
-|**Example**|Find all frames with odd numbers.|  
-|**Workflow**|Convert all "frame number" fields to string values, and list frames end with odd values.  |
-|**Usage**|`string(frame.number) matches "[13579]$"`|
+<table class="table table-bordered" style="width:1075.56px"><tbody><tr><td><span style="font-weight:bolder">Filter</span><br></td><td style="text-align:left"><span style="text-align:center"><b>string</b></span><br></td></tr><tr><td><span style="font-weight:bolder">Type</span></td><td style="text-align:left"><span style="text-align:center">Function</span><br></td></tr><tr><td><span style="font-weight:bolder">Description</span></td><td style="text-align:left">Convert a non-string value to a string.<br></td></tr><tr><td><span style="font-weight:bolder">Example</span></td><td style="text-align:left">Find all frames with odd numbers.<br></td></tr><tr><td><span style="font-weight:bolder">Workflow</span></td><td style="text-align:left">Convert all "frame number" fields to string values, and list frames end with odd values.<br></td></tr><tr><td><span style="font-weight:bolder">Usage</span></td><td style="text-align:left"><p><code>string(frame.number) matches "[13579]$"</code></p></td></tr></tbody></table>
 
 **Bookmarks and Filtering Buttons**
 
@@ -858,7 +795,7 @@ Before investigating the traffic, let's review some legitimate and suspicious AR
 
   
 
-<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark filter</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>arp</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"ARP"</span>&nbsp;options for grabbing the low-hanging fruits:</p><ul style="text-align:left"><li><span>Opcode 1: ARP requests.</span></li><li><span>Opcode 2: ARP responses.</span></li><li><b>Hunt:</b> Arp scanning</li><li><b>Hunt:</b><span> Possible ARP poisoning detection</span></li><li><b>Hunt:</b><span> Possible ARP flooding from detection:</span></li></ul></td><td><ul><li style="text-align:left"><code>arp.opcode == 1</code></li></ul><ul><li style="text-align:left"><code>arp.opcode == 2</code></li></ul><ul><li style="text-align:left"><code>arp.dst.hw_mac==00:00:00:00:00:00</code></li></ul><ul><li style="text-align:left"><code>arp.duplicate-address-detected or arp.duplicate-address-frame</code></li></ul><ul><li style="text-align:left"><code>((arp) &amp;&amp; (arp.opcode == 1)) &amp;&amp; (arp.src.hw_mac == target-mac-address)</code><br></li></ul></td></tr></tbody></table>
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark filter</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>arp</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"ARP"</span>&nbsp;options for grabbing low-hanging fruit:</p><ul style="text-align:left"><li><span>Opcode 1: ARP requests.</span></li><li><span>Opcode 2: ARP responses.</span></li><li><b>Hunt:</b> Arp scanning</li><li><b>Hunt:</b><span> Possible ARP poisoning detection</span></li><li><b>Hunt:</b><span> Possible ARP flooding from detection:</span></li></ul></td><td><ul><li style="text-align:left"><code>arp.opcode == 1</code></li></ul><ul><li style="text-align:left"><code>arp.opcode == 2</code></li></ul><ul><li style="text-align:left"><code>arp.dst.hw_mac==00:00:00:00:00:00</code></li></ul><ul><li style="text-align:left"><code>arp.duplicate-address-detected or arp.duplicate-address-frame</code></li></ul><ul><li style="text-align:left"><code>((arp) &amp;&amp; (arp.opcode == 1)) &amp;&amp; (arp.src.hw_mac == target-mac-address)</code><br></li></ul></td></tr></tbody></table>
 
 ![](2023-02-16-07-32-01.png)
 
