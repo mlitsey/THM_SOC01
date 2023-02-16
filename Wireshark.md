@@ -307,9 +307,9 @@ What is the name of the second artist?
 - `artist=2'><h3>Blad3</h3>`
 - Blad3
 
-# **-- Wireshark: Packet Operations --**
+# **Wireshark: Packet Operations**
 
-## _**Introduction**_
+## _**1: Introduction**_
 
 In this room, we will cover the fundamentals of packet analysis with Wireshark and investigate the event of interest at the packet-level. Note that this is the second room of the Wireshark room trio, and it is suggested to visit the first room ([**Wireshark: The Basics**](https://tryhackme.com/room/wiresharkthebasics)) to practice and refresh your Wireshark skills before starting this one.
 
@@ -418,7 +418,7 @@ What is the number of HTTP Requests accomplished by "rad[.]msn[.]com?
 - Statistics -> HTTP -> Requests -> look under Topic/Item for the above web site and hi-light it -> scroll right to Count column
 - 39
 
-## _**Packet Filtering | Principles**_
+## _**4: Packet Filtering | Principles**_
 
 In the previous room ([**Wireshark | The Basics**](https://tryhackme.com/room/wiresharkthebasics)), we covered packet filtering and how to filter packets without using queries. In this room, we will use queries to filter packets. As mentioned earlier, there are two types of filters in Wireshark. While both use similar syntax, they are used for different purposes. Let's remember the difference between these two categories.  
 
@@ -492,7 +492,7 @@ Filter toolbar features are shown below.
 
 ![](2023-02-15-06-52-03.png)
 
-## _**Packet Filtering | Protocol Filters**_
+## _**5: Packet Filtering | Protocol Filters**_
 
 **Protocol Filters**
 
@@ -546,20 +546,321 @@ Note: The [first room](https://tryhackme.com/room/wiresharkthebasics) introdu
 
 What is the number of IP packets?
 
-- 
+- Start Wireshark
+- Open Exercise.pcapng
+- Apply Display filter of `ip`
+- Bottom right side of window look for Packets then Displayed
+- 81420
 
 What is the number of packets with a "TTL value less than 10"?
 
-Answer format: **
+- Apply Display filter of `ip.ttl < 10`
+- Bottom right side of window look for Packets then Displayed
+- 66
 
 What is the number of packets which uses "TCP port 4444"?
 
-Answer format: ***
+- Apply Display filter of `tcp.port == 4444`
+- Bottom right side of window look for Packets then Displayed
+- 632
+
 
 What is the number of "HTTP GET" requests sent to port "80"?
 
-Answer format: ***
+- Apply Display filter of `(tcp.port == 80) && (http.request.method == "GET")`
+- Bottom right side of window look for Packets then Displayed
+- 527
 
 What is the number of "type A DNS Queries"?
 
-- 
+- Apply Display filter of `(dns.flags.response == 0) && (dns.qry.type == 1)`
+- Bottom right side of window look for Packets then Displayed
+- 55
+- This didn't give the right answer. You can see under the Protocol column some are LLMNR
+- `((dns.flags.response == 0) && (dns.qry.type == 1)) && !(llmnr)`
+- 51
+- Or you can do the following
+- Go to Statistics -> DNS
+- Under Total Packets -> Query Type -> A (Host Address)
+- Hi-lite A (Host Address) -> Display filter: `dns.flags.response==0` -> Apply
+- Look at A (Host Address) Count Column
+- 51
+- An even easier filter is 
+- `dns.a`
+
+## **6: Advanced Filtering**
+
+So far, you have learned the basics of packet filtering operations. Now it is time to focus on specific packet details for the event of interest. Besides the operators and expressions covered in the previous room, Wireshark has advanced operators and functions. These advanced filtering options help the analyst conduct an in-depth analysis of an event of interest.  
+
+**Filter: "contains"**
+
+|
+|Filter|**contains**|
+|**Type**|Comparison Operator|
+|**Description**|Search a value inside packets. It is case-sensitive and provides similar functionality to the "Find" option by focusing on a specific field.|
+|**Example**|Find all "Apache" servers.|
+|**Workflow**|List all HTTP packets where packets' "server" field contains the "Apache" keyword.|
+|**Usage**|`http.server contains "Apache"`|
+
+**Filter: "matches"**
+
+|
+|Filter|**matches**|
+|**Type**|Comparison Operator  |
+|**Description**|Search a pattern of a regular expression. It is case insensitive, and complex queries have a margin of error.  |
+|**Example**|Find all .php and .html pages.|  
+|**Workflow**|List all HTTP packets where packets' "host" fields match keywords ".php" or ".html".  |
+|**Usage**|`http.host matches "\.(php|html)"`|
+
+**Filter: "in"**
+
+|
+|Filter  |**in**  |
+|**Type** |Set Membership  |
+|**Description**|Search a value or field inside of a specific scope/range.  |
+|**Example**|Find all packets that use ports 80, 443 or 8080.  |
+|**Workflow**|List all TCP packets where packets' "port" fields have values 80, 443 or 8080.  |
+|**Usage**|`tcp.port in {80 443 8080}`|
+
+**Filter: "upper"**
+
+|
+|Filter  |**upper**  |
+|**Type**|Function  |
+|**Description**|Convert a string value to uppercase.|
+|**Example**|Find all "APACHE" servers.  |
+|**Workflow**|Convert all HTTP packets' "server" fields to uppercase and list packets that contain the "APACHE" keyword.  |
+|**Usage**|`upper(http.server) contains "APACHE"`|
+
+**Filter: "lower"**
+
+|
+|Filter  |**lower**  |
+|**Type**|Function  |
+|**Description**|Convert a string value to lowercase.|
+|**Example**|Find all "apache" servers.|
+|**Workflow**|Convert all HTTP packets' "server" fields info to lowercase and list packets that contain the "apache" keyword.  |
+|**Usage**|`lower(http.server) contains "apache"`|
+
+**Filter: "string"**
+
+|
+|Filter  |**string**  |
+|**Type**|Function  |
+|**Description**|Convert a non-string value to a string.  |
+|**Example**|Find all frames with odd numbers.|  
+|**Workflow**|Convert all "frame number" fields to string values, and list frames end with odd values.  |
+|**Usage**|`string(frame.number) matches "[13579]$"`|
+
+**Bookmarks and Filtering Buttons**
+
+We've covered different types of filtering options, operators and functions. It is time to create filters and save them as bookmarks and buttons for later usage. As mentioned in the previous task, the filter toolbar has a filter bookmark section to save user-created filters, which helps analysts re-use favourite/complex filters with a couple of clicks. Similar to bookmarks, you can create filter buttons ready to apply with a single click. 
+
+Creating and using bookmarks.
+
+![](2023-02-15-09-43-33.png)
+
+Creating and using display filter buttons.
+
+![](2023-02-15-09-44-11.png)
+
+**Profiles**
+
+Wireshark is a multifunctional tool that helps analysts to accomplish in-depth packet analysis. As we covered during the room, multiple preferences need to be configured to analyse a specific event of interest. It is cumbersome to re-change the configuration for each investigation case, which requires a different set of colouring rules and filtering buttons. This is where Wireshark profiles come into play. You can create multiple profiles for different investigation cases and use them accordingly. You can use the **"Edit --> Configuration Profiles"** menu or the **"lower right bottom of the status bar --> Profile"** section to create, modify and change the profile configuration.
+
+**Questions**
+
+Find all Microsoft IIS servers. What is the number of packets that did not originate from "port 80"?
+
+- Start Wireshark
+- Open Exercise.pcapng from desktop
+- Display filter
+- `(http.server contains "Microsoft-IIS") && !(tcp.srcport == 80)`
+- 21
+
+Find all Microsoft IIS servers. What is the number of packets that have "version 7.5"?
+
+- `(http.server contains "Microsoft-IIS/7.5")`
+- 71
+
+What is the total number of packets that use ports 3333, 4444 or 9999?
+
+- `tcp.port in { 3333 4444 9999}`
+- 2235
+
+What is the number of packets with "even TTL numbers"?
+
+- `string (ip.ttl) matches "[24680]$"`
+- 77289
+
+Change the profile to "Checksum Control". What is the number of "Bad TCP Checksum" packets?
+
+- `tcp.checksum.status == "Bad"`
+- 34185
+
+Use the existing filtering button to filter the traffic. What is the number of displayed packets?
+
+- Look to the right of the Display filter bar for `gif/jpeg with http-200` and click that
+- The applied filter is 
+- `(http.response.code == 200 ) && (http.content_type matches "image(gif||jpeg)")`
+- 261
+
+# **Wireshark: Traffic Analysis**
+
+## _**1: Introduction**_
+In this room, we will cover the techniques and key points of traffic analysis with Wireshark and detect suspicious activities. Note that this is the third and last room of the Wireshark room trio, and it is suggested to visit the first two rooms stated below to practice and refresh your Wireshark skills before starting this one.
+
+- [**Wireshark: The Basics**](https://tryhackme.com/room/wiresharkthebasics)
+- [**Wireshark: Packet Operations**](https://tryhackme.com/room/wiresharkpacketoperations)
+
+In the first two rooms, we have covered how to use Wireshark and do packet-level searches. Now, it is time to investigate and correlate the packet-level information to see the big picture in the network traffic, like detecting anomalies and malicious activities. For a security analyst, it is vital to stop and understand pieces of information spread in packets by applying the analyst's knowledge and tool functionality. This room will cover investigating packet-level details by synthesising the analyst knowledge and  Wireshark functionality for detecting anomalies and odd situations for a given case.
+
+## _**2: Nmap Scans**_
+
+Nmap is an industry-standard tool for mapping networks, identifying live hosts and discovering the services. As it is one of the most used network scanner tools, a security analyst should identify the network patterns created with it. This section will cover identifying the most common Nmap scan types.
+
+- TCP connect scans
+- SYN scans
+- UDP scans
+
+It is essential to know how Nmap scans work to spot scan activity on the network. However, it is impossible to understand the scan details without using the correct filters. Below are the base filters to probe Nmap scan behaviour on the network. 
+
+**TCP flags in a nutshell.**
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filters</b></td></tr><tr><td>Global search.</td><td><ul><li style="text-align:left"><code>tcp</code></li></ul><ul><li style="text-align:left"><code>udp</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only SYN flag.</li><li style="text-align:left">SYN flag is set. The rest of the bits are not important.</li></ul></td><td><ul><li style="text-align:left"><code>tcp.flags == 2</code></li></ul><ul><li style="text-align:left"><code>tcp.flags.syn == 1</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only ACK flag.</li><li style="text-align:left">ACK flag is set. The rest of the bits are not important.<br></li></ul></td><td><ul><li style="text-align:left"><code>tcp.flags == 16</code></li></ul><ul><li style="text-align:left"><code>tcp.flags.ack == 1</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only SYN, ACK flags.</li><li style="text-align:left">SYN and ACK are set. The rest of the bits are not important.</li></ul></td><td><ul><li style="text-align:left"><code>tcp.flags == 18</code></li></ul><ul><li style="text-align:left"><code>(tcp.flags.syn == 1) and (tcp.flags.ack == 1)</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only RST flag.</li><li style="text-align:left">RST flag is set. The rest of the bits are not important.<br></li></ul></td><td><div style="text-align:left"><br></div><ul><li style="text-align:left"><code>tcp.flags == 4</code></li></ul><ul><li style="text-align:left"><code>tcp.flags.reset == 1</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only RST, ACK flags.</li><li style="text-align:left">RST and ACK are set. The rest of the bits are not important.<br></li></ul></td><td><ul><li style="text-align:left"><code>tcp.flags == 20</code></li></ul><ul><li style="text-align:left"><code>(tcp.flags.reset == 1) and (tcp.flags.ack == 1)</code></li></ul></td></tr><tr><td><ul><li style="text-align:left">Only FIN flag</li><li style="text-align:left">FIN flag is set. The rest of the bits are not important.</li></ul></td><td><ul><li style="text-align:left"><code style="font-size:14px">tcp.flags == 1</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">tcp.flags.fin == 1</code></li></ul></td></tr></tbody></table>
+
+TCP Connect Scans  
+
+**TCP Connect Scan in a nutshell:**
+
+- Relies on the three-way handshake (needs to finish the handshake process).
+- Usually conducted with `nmap -sT` command.
+- Used by non-privileged users (only option for a non-root user).
+- Usually has a windows size larger than 1024 bytes as the request expects some data due to the nature of the protocol.
+
+<table class="table table-bordered"><tbody><tr><td><b><span>Open TCP Port</span></b></td><td><b><span>Open TCP Port</span><br></b></td><td><b><span>Closed TCP Port</span></b><br></td></tr><tr><td><ul><li style="text-align:left">SYN --&gt;</li><li style="text-align:left">&lt;-- SYN, ACK</li><li style="text-align:left">ACK --&gt;<br></li></ul></td><td><ul><li style="text-align:left"><span style="text-align:center">SYN --&gt;</span></li><li style="text-align:left"><span style="text-align:center">&lt;-- SYN, ACK</span></li><li style="text-align:left"><span style="text-align:center">ACK --&gt;</span></li><li style="text-align:left"><span style="text-align:center">RST, ACK --&gt;</span><br></li></ul></td><td><ul><li style="text-align:left"><span style="text-align:center">SYN --&gt;</span></li><li style="text-align:left"><span style="text-align:center">&lt;-- RST, ACK</span><br></li></ul></td></tr></tbody></table>
+
+The images below show the three-way handshake process of the open and close TCP ports. Images and pcap samples are split to make the investigation easier and understand each case's details.
+
+Open TCP port (Connect):
+
+![](2023-02-15-12-48-00.png)
+
+Closed TCP port (Connect):
+
+![](2023-02-15-12-48-24.png)
+
+The above images provide the patterns in isolated traffic. However, it is not always easy to spot the given patterns in big capture files. Therefore analysts need to use a generic filter to view the initial anomaly patterns, and then it will be easier to focus on a specific traffic point. The given filter shows the TCP Connect scan patterns in a capture file.
+
+`tcp.flags.syn==1 and tcp.flags.ack==0 and tcp.window_size > 1024`
+
+**SYN Scans**  
+
+TCP SYN Scan in a nutshell:
+
+- Doesn't rely on the three-way handshake (no need to finish the handshake process).
+- Usually conducted with `nmap -sS` command.
+- Used by privileged users.
+- Usually have a size less than or equal to 1024 bytes as the request is not finished and it doesn't expect to receive data.
+
+<table class="table table-bordered"><tbody><tr><td><b><span>Open TCP Port</span></b></td><td><b><span>Close TCP Port</span></b></td></tr><tr><td><ul><li style="text-align:left">SYN --&gt;</li><li style="text-align:left">&lt;-- SYN,ACK</li><li style="text-align:left">RST--&gt;</li></ul></td><td><ul><li style="text-align:left">SYN --&gt;</li><li style="text-align:left">&lt;-- RST,ACK</li></ul></td></tr></tbody></table>
+
+Open TCP port (SYN):
+
+![](2023-02-16-07-03-56.png)
+
+Closed TCP port (SYN):
+
+![](2023-02-15-12-51-05.png)
+
+The given filter shows the TCP SYN scan patterns in a capture file.
+
+`tcp.flags.syn==1 and tcp.flags.ack==0 and tcp.window_size <= 1024`
+
+**UDP Scans**
+
+UDP Scan in a nutshell:
+
+- Doesn't require a handshake process
+- No prompt for open ports
+- ICMP error message for closed ports
+- Usually conducted with `nmap -sU` command.
+
+<table class="table table-bordered"><tbody><tr><td><span style="font-weight:bolder"><span>Open UDP Port</span></span><br></td><td><span style="font-weight:bolder"><span>Closed UDP Port</span></span><br></td></tr><tr><td><ul><li style="text-align:left"><span>UDP packet --&gt;</span></li></ul></td><td><ul><li style="text-align:left"><span>UDP packet --&gt;</span></li><li style="text-align:left">ICMP Type 3, Code 3 message. (Destination unreachable, port unreachable)</li></ul></td></tr></tbody></table>
+
+Closed (port no 69) and open (port no 68) UDP ports:
+
+![](2023-02-16-07-05-53.png)
+
+The above image shows that the closed port returns an ICMP error packet. No further information is provided about the error at first glance, so how can an analyst decide where this error message belongs? The ICMP error message uses the original request as encapsulated data to show the source/reason of the packet. Once you expand the ICMP section in the packet details pane, you will see the encapsulated data and the original request, as shown in the below image.
+
+![](2023-02-15-12-54-39.png)
+![](2023-02-15-12-55-01.png)
+
+The given filter shows the UDP scan patterns in a capture file.  
+
+`icmp.type==3 and icmp.code==3`
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/nmap/Exercise.pcapng" file.
+
+- Start Wireshark
+- open file
+
+What is the total number of the "TCP Connect" scans?
+
+- `tcp.flags.syn==1 and tcp.flags.ack==0 and tcp.window_size > 1024`
+- 1000
+
+Which scan type is used to scan the TCP port 80?
+
+- `tcp.port==80`
+- shows 2 scans, first is tcp connect, second is tcp syn
+- tcp connect
+
+How many "UDP close port" messages are there?
+
+- `icmp.type==3 and icmp.code==3`
+- `icmp.code==3` also works
+- 1083
+
+Which UDP port in the 55-70 port range is open?
+
+- **Hint:** Remember, half of the traffic analysis is done by hand when using Wireshark. Filter the traffic as shown in the task, then filter the destination port (UDP) with the "filter a column" option. Finally, scroll the bar in the packet list section and investigate the findings manually.
+- `udp.port >=55 && udp.port <=70`
+- `udp.port in {55..70}` also works and is easier to read
+- scroll and find the open port
+- 68
+
+![](2023-02-16-07-22-37.png)
+
+## _**3: ARP Poisoning & Man In The Middle!**_
+
+ARP Poisoning/Spoofing (A.K.A. Man In The Middle Attack)  
+
+**ARP** protocol, or **A**ddress **R**esolution **P**rotocol (**ARP**), is the technology responsible for allowing devices to identify themselves on a network. Address Resolution Protocol Poisoning (also known as ARP Spoofing or Man In The Middle (MITM) attack) is a type of attack that involves network jamming/manipulating by sending malicious ARP packets to the default gateway. The ultimate aim is to manipulate the **"IP to MAC address table"** and sniff the traffic of the target host.
+
+There are a variety of tools available to conduct ARP attacks. However, the mindset of the attack is static, so it is easy to detect such an attack by knowing the ARP protocol workflow and Wireshark skills. 
+
+**ARP analysis in a nutshell:**
+
+- Works on the local network
+- Enables the communication between MAC addresses
+- Not a secure protocol
+- Not a routable protocol
+- It doesn't have an authentication function
+- Common patterns are request & response, announcement and gratuitous packets.
+
+Before investigating the traffic, let's review some legitimate and suspicious ARP packets. The legitimate requests are similar to the shown picture: a broadcast request that asks if any of the available hosts use an IP address and a reply from the host that uses the particular IP address.
+
+  
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark filter</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>arp</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"ARP"</span>&nbsp;options for grabbing the low-hanging fruits:</p><ul style="text-align:left"><li><span>Opcode 1: ARP requests.</span></li><li><span>Opcode 2: ARP responses.</span></li><li><b>Hunt:</b> Arp scanning</li><li><b>Hunt:</b><span> Possible ARP poisoning detection</span></li><li><b>Hunt:</b><span> Possible ARP flooding from detection:</span></li></ul></td><td><ul><li style="text-align:left"><code>arp.opcode == 1</code></li></ul><ul><li style="text-align:left"><code>arp.opcode == 2</code></li></ul><ul><li style="text-align:left"><code>arp.dst.hw_mac==00:00:00:00:00:00</code></li></ul><ul><li style="text-align:left"><code>arp.duplicate-address-detected or arp.duplicate-address-frame</code></li></ul><ul><li style="text-align:left"><code>((arp) &amp;&amp; (arp.opcode == 1)) &amp;&amp; (arp.src.hw_mac == target-mac-address)</code><br></li></ul></td></tr></tbody></table>
+
+![](2023-02-16-07-32-01.png)
+
+A suspicious situation means having two different ARP responses (conflict) for a particular IP address. In that case, Wireshark's expert info tab warns the analyst. However, it only shows the second occurrence of the duplicate value to highlight the conflict. Therefore, identifying the malicious packet from the legitimate one is the analyst's challenge. A possible IP spoofing case is shown in the picture below.
+
