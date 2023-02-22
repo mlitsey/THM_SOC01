@@ -872,3 +872,285 @@ What is the comment provided by the "Client354"?
 - Nice work!
 ![](2023-02-20-09-18-12.png)
 
+## _**4: Identifying Hosts: DHCP, NetBIOS and Kerberos**_
+
+Identifying Hosts  
+
+When investigating a compromise or malware infection activity, a security analyst should know how to identify the hosts on the network apart from IP to MAC address match. One of the best methods is identifying the hosts and users on the network to decide the investigation's starting point and list the hosts and users associated with the malicious traffic/activity.
+
+Usually, enterprise networks use a predefined pattern to name users and hosts. While this makes knowing and following the inventory easier, it has good and bad sides. The good side is that it will be easy to identify a user or host by looking at the name. The bad side is that it will be easy to clone that pattern and live in the enterprise network for adversaries. There are multiple solutions to avoid these kinds of activities, but for a security analyst, it is still essential to have host and user identification skills.  
+
+Protocols that can be used in Host and User identification:
+
+- Dynamic Host Configuration Protocol (DHCP) traffic
+- NetBIOS (NBNS) traffic 
+- Kerberos traffic
+
+**DHCP Analysis**
+
+**DHCP** protocol, or **D**ynamic **H**ost **C**onfiguration **P**rotocol **(DHCP)****,** is the technology responsible for managing automatic IP address and required communication parameters assignment.  
+
+**DHCP investigation in a nutshell:**
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td style="text-align:center">Global search.</td><td><ul><li style="text-align:left"><code>dhcp</code> or <code>bootp</code></li></ul></td></tr><tr><td style="text-align:left">Filtering the proper DHCP packet options is vital to finding an event of interest.&nbsp;<br><br><ul><li style="text-align:left"><b>"DHCP Request"</b> packets contain the hostname information</li><li style="text-align:left"><b>"DHCP ACK"</b> packets represent the accepted requests</li><li style="text-align:left"><b>"DHCP NAK"</b> packets represent denied requests</li></ul><p style="text-align:left">Due to the nature of the protocol, only "Option 53" ( request type) has predefined static values. You should filter the packet type first, and then you can filter the rest of the options by "applying as column" or use the advanced filters like "contains" and "matches".<br></p></td><td><p></p><ul><li style="text-align:left"><span style="font-size:1rem">Request: </span><code>dhcp.option.dhcp == 3</code></li></ul><span style="font-size:1rem"><ul><li style="text-align:left"><span style="font-size:1rem">ACK: </span><code>dhcp.option.dhcp == 5</code></li></ul></span><ul><li style="text-align:left"><span style="font-size:1rem">NAK: </span><code>dhcp.option.dhcp == 6</code></li></ul><p></p></td></tr><tr><td style="text-align:left"><p><b>"DHCP Request"</b> options for grabbing the low-hanging fruits:</p><ul><li><b>Option 12:</b> Hostname.</li><li><b>Option 50:</b> Requested IP address.</li><li><b>Option 51:</b> Requested IP lease time.</li><li><b>Option 61: </b><span>Client's MAC address.</span></li></ul></td><td style="text-align:left"><ul><li><code>dhcp.option.hostname contains "keyword"</code></li></ul></td></tr><tr><td><p style="text-align:left"><b>"DHCP ACK"</b> options for grabbing the low-hanging fruit:</p><ul style="text-align:left"><li><b>Option 15:</b> Domain name.</li><li><b>Option 51:</b> Assigned IP lease time.</li></ul></td><td style="text-align:left"><ul><li><code>dhcp.option.domain_name contains "keyword"</code></li></ul></td></tr><tr><td><p style="text-align:left"><b>"DHCP NAK"</b> options for grabbing the low-hanging fruit:</p><ul style="text-align:left"><li><b>Option 56:</b> Message (rejection details/reason).</li></ul></td><td style="text-align:left"><p>As the message could be unique according to the case/situation, It is suggested to read the message instead of filtering it. Thus, the analyst could create a more reliable hypothesis/result by understanding the event circumstances.</p></td></tr></tbody></table>
+
+![](2023-02-20-10-25-18.png)
+
+NetBIOS (NBNS) Analysis
+
+**NetBIOS** or **Net**work **B**asic **I**nput/**O**utput **S**ystem is the technology responsible for allowing applications on different hosts to communicate with each other. 
+
+**NBNS investigation in a nutshell:**
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td>Global search.</td><td><ul><li style="text-align:left"><code>nbns</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"NBNS"</span>&nbsp;options for grabbing the low-hanging fruit:</p><ul style="text-align:left"><li><b>Queries:</b> Query details.</li><li>Query details could contain <b>"name, Time to live (TTL) and IP address details"</b></li></ul></td><td><ul><li style="text-align:left"><code>nbns.name contains "keyword"</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-20-10-26-20.png)
+![](2023-02-20-10-26-37.png)
+
+Kerberos Analysis  
+
+**Kerberos** is the default authentication service for Microsoft Windows domains. It is responsible for authenticating service requests between two or more computers over the untrusted network. The ultimate aim is to prove identity securely.  
+
+**Kerberos investigation in a nutshell:**
+
+<table class="table table-bordered" style="font-size:1rem"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td>Global search.</td><td><ul><li style="text-align:left"><code>kerberos</code></li></ul></td></tr><tr><td><p style="text-align:left">User account search:</p><ul style="text-align:left"><li><b>CNameString: </b>The username.</li></ul><p style="text-align:justify"><strong>Note:</strong><span style="color:rgb(14, 16, 26);background:transparent;margin-top:0pt;margin-bottom:0pt">&nbsp;Some packets could provide hostname information in this field. To avoid this confusion, filter the<b> "$"</b> value. The values end with <b>"$"</b> are hostnames, and the ones without it are user names.</span><br></p></td><td><ul><li style="text-align:left"><code>kerberos.CNameString contains "keyword"</code>&nbsp;</li><li style="text-align:left"><code>kerberos.CNameString and !(kerberos.CNameString contains "$" )</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"Kerberos"</span>&nbsp;options for grabbing the low-hanging fruit:</p><ul style="text-align:left"><li><b>pvno:</b> Protocol version.</li><li><span style="font-size:1rem"><b>realm:</b> Domain name for the generated ticket.</span><br></li><li><b>sname:</b> Service and domain name for the generated ticket.</li><li><span style="font-size:1rem"><b>addresses:</b> Client IP address and NetBIOS name.</span><br></li></ul><p style="text-align:left"><b style="font-size:1rem;text-align:center">Note:</b><span style="font-size:1rem;text-align:center"> the "addresses" information is only available in request packets.</span></p></td><td><ul><li style="text-align:left"><code>kerberos.pvno == 5</code></li></ul><ul><li style="text-align:left"><code>kerberos.realm contains ".org"</code>&nbsp;</li></ul><ul><li style="text-align:left"><code>kerberos.SNameString == "krbtg"</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-20-10-27-26.png)
+![](2023-02-20-10-27-43.png)
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/dhcp-netbios-kerberos/dhcp-netbios.pcap" file.
+
+What is the MAC address of the host "Galaxy A30"?
+
+- `dhcp.option.hostname contains "Galaxy"`
+- Expand the Dynamic Host Configuration Protocol section -> expand option 12 Host Name -> look for correct host name. 
+- 9a:81:41:cb:96:6c
+
+How many NetBIOS registration requests does the "LIVALJM" workstation have?
+
+- `nbns`
+- look for a registration record containing LIVALJM -> grab the options we are looking for and filter again
+- `(nbns.name contains "LIVALJM") && (nbns.flags.opcode == 5)`
+- 16
+
+Which host requested the IP address "172.16.13.85"?
+
+- `(dhcp.option.dhcp == 3) && (dhcp.option.requested_ip_address == 172.16.13.85)`
+- Expand the Dynamic Host Configuration Protocol section -> expand option 12 Host Name
+- Galaxy-A12
+
+Use the "Desktop/exercise-pcaps/dhcp-netbios-kerberos/kerberos.pcap" file.
+
+What is the IP address of the user "u5"? (Enter the address in defanged format.)
+
+- `kerberos.CNameString contains "u5"`
+- expand Internet Protocol Version 4 -> Look for Source
+- 10[.]1[.]12[.]2
+
+
+What is the hostname of the available host in the Kerberos packets?
+
+- `kerberos.CNameString contains "$"`
+- Expand Kerberos -> expand tgs-rep -> expand cname -> expand cname-string -> look for CNameString
+- xp1$
+
+## _**5: Tunneling Traffic: DNS and ICMP**_
+
+**Tunnelling Traffic: ICMP and DNS**
+
+Traffic tunnelling is (also known as **"port forwarding"**) transferring the data/resources in a secure method to network segments and zones. It can be used for "internet to private networks" and "private networks to internet" flow/direction. There is an encapsulation process to hide the data, so the transferred data appear natural for the case, but it contains private data packets and transfers them to the final destination securely.  
+
+Tunnelling provides anonymity and traffic security. Therefore it is highly used by enterprise networks. However, as it gives a significant level of data encryption, attackers use tunnelling to bypass security perimeters using the standard and trusted protocols used in everyday traffic like ICMP and DNS. Therefore, for a security analyst, it is crucial to have the ability to spot ICMP and DNS anomalies.
+
+**ICMP Analysis**
+
+Internet Control Message Protocol (ICMP) is designed for diagnosing and reporting network communication issues. It is highly used in error reporting and testing. As it is a trusted network layer protocol, sometimes it is used for denial of service (DoS) attacks; also, adversaries use it in data exfiltration and C2 tunnelling activities.
+
+ICMP analysis in a nutshell:
+
+Usually, ICMP tunnelling attacks are anomalies appearing/starting after a malware execution or vulnerability exploitation. As the ICMP packets can transfer an additional data payload, adversaries use this section to exfiltrate data and establish a C2 connection. It could be a TCP, HTTP or SSH connection. As the ICMP protocols provide a great opportunity to carry extra data, it also has disadvantages. Most enterprise networks block custom packets or require administrator privileges to create custom ICMP packets.
+
+A large volume of ICMP traffic or anomalous packet sizes are indicators of ICMP tunnelling. Still, the adversaries could create custom packets that match the regular ICMP packet size (64 bytes), so it is still cumbersome to detect these tunnelling activities. However, a security analyst should know the normal and the abnormal to spot the possible anomaly and escalate it for further analysis.
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark filters</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>icmp</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"ICMP"</span>&nbsp;options for grabbing the low-hanging fruits:</p><ul style="text-align:left"><li>Packet length.</li><li><span style="font-size:1rem">ICMP destination addresses.</span><br></li><li>Encapsulated protocol signs in ICMP payload.</li></ul></td><td><ul><li style="text-align:left"><code>data.len &gt; 64 and icmp</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-21-06-55-15.png)
+![](2023-02-21-06-55-34.png)
+
+**DNS Analysis**
+
+Domain Name System (DNS) is designed to translate/convert IP domain addresses to IP addresses. It is also known as a phonebook of the internet. As it is the essential part of web services, it is commonly used and trusted, and therefore often ignored. Due to that, adversaries use it in data exfiltration and C2 activities.
+
+DNS analysis in a nutshell:  
+
+Similar to ICMP tunnels, DNS attacks are anomalies appearing/starting after a malware execution or vulnerability exploitation. Adversary creates (or already has) a domain address and configures it as a C2 channel. The malware or the commands executed after exploitation sends DNS queries to the C2 server. However, these queries are longer than default DNS queries and crafted for subdomain addresses. Unfortunately, these subdomain addresses are not actual addresses; they are encoded commands as shown below:  
+
+**"encoded-commands.maliciousdomain.com"**
+
+When this query is routed to the C2 server, the server sends the actual malicious commands to the host. As the DNS queries are a natural part of networking activity, these packets have the chance of not being detected by network perimeters. A security analyst should know how to investigate the DNS packet lengths and target addresses to spot these anomalies.
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>dns</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-weight:bolder">"DNS"</span>&nbsp;options for grabbing the low-hanging fruits:</p><ul style="text-align:left"><li>Query length.</li><li><span>Anomalous and non-regular names in DNS addresses.</span></li><li><span>Long DNS addresses with encoded subdomain addresses.</span></li><li>Known patterns like dnscat and dns2tcp.</li><li><span>Statistical analysis like the anomalous volume of DNS requests for a particular target.</span></li></ul><p style="text-align:left"><b>!mdns: </b>Disable local link device queries.</p></td><td><ul><li style="text-align:left"><code>dns contains "dnscat"</code></li></ul><ul><li style="text-align:left"><code>dns.qry.name.len &gt; 15 and !mdns</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-21-07-05-16.png)
+![](2023-02-21-07-05-31.png)
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/dns-icmp/icmp-tunnel.pcap" file.
+
+Investigate the anomalous packets. Which protocol is used in ICMP tunnelling?
+
+- `data.len > 64 and icmp`
+- Hint: 1) Remember, Wireshark is not an IDS/IPS tool. A security analyst should know how to filter the packets and investigate the results manually. 2) Filtering anomalous packets and investigating the packet details (including payload data) could help.
+- Examin each packet looking for protocols -> packet 42 
+- SSH can be seen in the display
+- SSH
+![](2023-02-21-07-22-17.png)
+
+Use the "Desktop/exercise-pcaps/dns-icmp/dns.pcap" file.
+
+Investigate the anomalous packets. What is the suspicious main domain address that receives anomalous DNS queries? (Enter the address in defanged format.)
+
+- `dns`
+- add the DNS name field as a column -> scroll through names
+- dataexfil[.]com is at the end of long string of random numbers
+- dataexfil[.]com
+
+![](2023-02-21-07-39-13.png)
+![](2023-02-21-07-38-50.png)
+
+
+## _**6: Cleartext Protocol Analysis: FTP**_
+
+**Cleartext Protocol Analysis** 
+
+Investigating cleartext protocol traces sounds easy, but when the time comes to investigate a big network trace for incident analysis and response, the game changes. Proper analysis is more than following the stream and reading the cleartext data. For a security analyst, it is important to create statistics and key results from the investigation process. As mentioned earlier at the beginning of the Wireshark room series, the analyst should have the required network knowledge and tool skills to accomplish this. Let's simulate a cleartext protocol investigation with Wireshark!
+
+**FTP Analysis**
+
+File Transfer Protocol (FTP) is designed to transfer files with ease, so it focuses on simplicity rather than security. As a result of this, using this protocol in unsecured environments could create security issues like:
+
+- MITM attacks
+- Credential stealing and unauthorised access
+- Phishing
+- Malware planting
+- Data exfiltration
+
+FTP analysis in a nutshell:
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td>Global search</td><td><ul><li style="text-align:left"><code>ftp</code></li></ul></td></tr><tr><td style="text-align:left"><p><b>"FTP"</b> options for grabbing the low-hanging fruit:</p><ul><li><b>x1x series:</b> Information request responses.</li><li><b>x2x series: </b>Connection messages.</li><li><b>x3x series:</b> Authentication messages.</li></ul><p><b>Note:</b> "200" means command successful.</p></td><td><b>---</b></td></tr><tr><td style="text-align:left"><p><span style="font-weight:bolder">"x1x"</span>&nbsp;series options for grabbing the low-hanging fruit:</p><ul><li><b>211: </b>System status.</li><li><b>212:</b> Directory status.</li><li><b>213:</b> File status</li></ul></td><td><ul><li style="text-align:left"><code>ftp.response.code == 211</code>&nbsp;</li></ul></td></tr><tr><td style="text-align:left"><p><span style="font-weight:bolder">"x2x"</span>&nbsp;series options for grabbing the low-hanging fruit:</p><ul><li><b>220:</b> Service ready.</li><li><b>227:</b> Entering passive mode.</li><li><b>228:</b> Long passive mode.</li><li><b>229:</b> Extended passive mode.</li></ul></td><td><ul><li style="text-align:left"><code>ftp.response.code == 227</code></li></ul></td></tr><tr><td style="text-align:left"><p><span style="font-weight:bolder">"x3x"</span>&nbsp;series options for grabbing the low-hanging fruit:</p><ul><li><b>230:</b> User login.</li><li><b>231:</b> User logout.</li><li><b>331:</b> Valid username.</li><li><b>430:</b> Invalid username or password</li><li><b>530:</b> No login, invalid password.</li></ul></td><td><ul><li style="text-align:left"><code>ftp.response.code == 230</code></li></ul></td></tr><tr><td style="text-align:left"><p><span style="font-weight:bolder">"FTP"</span>&nbsp;commands for grabbing the low-hanging fruit:</p><ul><li><b>USER:</b> Username.</li><li><b>PASS: </b>Password.</li><li><b>CWD:</b> Current work directory.</li><li><b>LIST:</b> List.</li></ul></td><td><ul><li style="text-align:left"><code>ftp.request.command == "USER"</code></li></ul><ul><li style="text-align:left"><code>ftp.request.command == "PASS"</code></li></ul><ul><li style="text-align:left"><code>ftp.request.arg == "password"</code></li></ul></td></tr><tr><td style="text-align:left"><p>Advanced usages examples for grabbing low-hanging fruit:</p><ul><li><b>Bruteforce signal:</b> List failed login attempts.</li><li><span style="font-size:1rem"><b>Bruteforce signal:</b> List target username.</span></li><li><span style="font-size:1rem"><b>Password spray signal:</b> List targets for a static password.</span><br></li></ul></td><td><ul><li style="text-align:left"><code>ftp.response.code == 530</code></li></ul><ul><li style="text-align:left"><code>(ftp.response.code == 530) and (ftp.response.arg contains "username")</code></li></ul><ul><li style="text-align:left"><code>(ftp.request.command == "PASS" ) and (ftp.request.arg == "password")</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-22-05-45-15.png)
+![](2023-02-22-05-45-40.png)
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/ftp/ftp.pcap" file.
+
+How many incorrect login attempts are there?
+
+- `ftp.response.code == 530`
+- 737
+
+What is the size of the file accessed by the "ftp" account?
+
+- `ftp.response.code == 213`
+- Only 2 responses, I couldn't see an "ftp" account, tried the first response for the answer
+- 39424
+![](2023-02-22-06-01-00.png)
+
+- second method `ftp contains "ftp"`
+- right click first frame with USER ftp and apply a conversation filter using TCP
+- Scroll down and find "Request: SIZE" and below that is the response. 
+
+The adversary uploaded a document to the FTP server. What is the filename?
+
+- `ftp`
+- found "Response: 226 Transfer complete", filtered on that
+- `ftp.response.arg == "Transfer complete."`
+- 4 responses but no name, went back to the ftp filter and looked around those 4 frames for file names. Couldn't find a put command but found a file name under a RETR or retrieve. 
+- resume.doc
+![](2023-02-22-06-31-48.png)
+
+The adversary tried to assign special flags to change the executing permissions of the uploaded file. What is the command used by the adversary?
+
+- `ftp.request.arg contains "resume.doc"`
+- CHMOD 777
+![](2023-02-22-06-34-27.png)
+
+## _**7: Cleartext Protocol Analysis: HTTP**_
+
+HTTP Analysis   
+
+Hypertext Transfer Protocol (HTTP) is a cleartext-based, request-response and client-server protocol. It is the standard type of network activity to request/serve web pages, and by default, it is not blocked by any network perimeter. As a result of being unencrypted and the backbone of web traffic, HTTP is one of the must know protocols in traffic analysis. Following attacks could be detected with the help of HTTP analysis:
+
+  
+
+- Phishing pages
+- Web attacks
+- Data exfiltration
+- Command and control traffic (C2)
+
+HTTP analysis in a nutshell:
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td><p>Global search</p><p style="text-align:left"><b>Note:</b><span>HTTP2 is a revision of the HTTP protocol for better performance and security. It supports binary data transfer and request &amp; response multiplexing.</span></p></td><td><ul><li style="text-align:left"><code>http</code></li></ul><ul><li style="text-align:left"><code>http2</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem;font-weight:bolder">"HTTP</span><span style="font-size:1rem"><b>&nbsp;Request Methods"</b> for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left">GET</li><li style="text-align:left">POST</li><li style="text-align:left">Request: Listing all requests</li></ul><p><br></p></td><td><ul><li style="text-align:left"><code>http.request.method == "GET"</code></li></ul><ul><li style="text-align:left"><code>http.request.method == "POST"</code></li></ul><ul><li style="text-align:left"><code>http.request</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem;font-weight:bolder">"HTTP</span><span style="font-size:1rem"><span style="font-weight:bolder">&nbsp;Response Status Codes"</span>&nbsp;for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left"><b>200 OK:</b> Request successful.</li><li style="text-align:left"><b>301 Moved Permanently: </b>Resource is moved to a new URL/path (permanently).</li><li style="text-align:left"><b>302 Moved Temporarily:</b> Resource is moved to a new URL/path (temporarily).</li><li style="text-align:left"><b>400 Bad Request:</b> Server didn't understand the request.</li><li style="text-align:left"><b>401 Unauthorised: </b>URL needs authorisation (login, etc.).</li><li style="text-align:left"><b>403 Forbidden:</b> No access to the requested URL.&nbsp;</li><li style="text-align:left"><b>404 Not Found:</b> Server can't find the requested URL.</li><li style="text-align:left"><b>405 Method Not Allowed: </b>Used method is not suitable or blocked.</li><li style="text-align:left"><b>408 Request Timeout:</b>&nbsp; Request look longer than server wait time.</li><li style="text-align:left"><b>500 Internal Server Error: </b>Request not completed, unexpected error.</li><li style="text-align:left"><b>503 Service Unavailable:</b> Request not completed server or service is down.</li></ul></td><td><ul><li style="text-align:left"><code>http.response.code == 200</code></li></ul><ul><li style="text-align:left"><code>http.response.code == 401</code></li></ul><ul><li style="text-align:left"><code>http.response.code == 403</code></li></ul><ul><li style="text-align:left"><code>http.response.code == 404</code></li></ul><ul><li style="text-align:left"><code>http.response.code == 405</code></li></ul><ul><li style="text-align:left"><code>http.response.code == 503</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem;font-weight:bolder">"HTTP</span><span style="font-size:1rem"><span style="font-weight:bolder">&nbsp;Parameters"</span>&nbsp;for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left"><b>User agent:</b> Browser and operating system identification to a web server application.</li><li style="text-align:left"><b style="font-size:1rem"><span>Request URI:</span></b><span style="font-size:1rem"> Points the requested resource from the server.</span><br></li><li style="text-align:left"><b><span>Full *URI: </span></b><span>Complete URI information.</span></li></ul><p style="text-align:left"><b><span>*URI: </span></b>Uniform Resource Identifier.</p></td><td><ul><li style="text-align:left"><code>http.user_agent contains "nmap"</code></li></ul><ul><li style="text-align:left"><code>http.request.uri contains "admin"</code></li></ul><ul><li style="text-align:left"><code>http.request.full_uri contains "admin"</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem;font-weight:bolder">"HTTP</span><span style="font-size:1rem"><span style="font-weight:bolder">&nbsp;Parameters"</span>&nbsp;for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left"><span style="font-size:1rem"><b>Server: </b>Server service name.</span><br></li><li style="text-align:left"><b>Host:</b> Hostname of the server</li><li style="text-align:left"><span style="font-size:1rem"><b>Connection:</b> Connection status.</span><br></li><li style="text-align:left"><b>Line-based text data:</b> Cleartext data provided by the server.</li><li style="text-align:left"><b>HTML Form URL Encoded:</b> Web form information.</li></ul></td><td><ul><li style="text-align:left"><code>http.server contains "apache"</code></li></ul><ul><li style="text-align:left"><code>http.host contains "keyword"</code></li></ul><ul><li style="text-align:left"><code>http.host == "keyword"</code></li></ul><ul><li style="text-align:left"><code>http.connection == "Keep-Alive"</code></li></ul><ul><li style="text-align:left"><code>data-text-lines contains "keyword"</code></li></ul></td></tr></tbody></table>
+
+User Agent Analysis   
+
+As the adversaries use sophisticated technics to accomplish attacks, they try to leave traces similar to natural traffic through the known and trusted protocols. For a security analyst, it is important to spot the anomaly signs on the bits and pieces of the packets. The "user-agent" field is one of the great resources for spotting anomalies in HTTP traffic. In some cases, adversaries successfully modify the user-agent data, which could look super natural. A security analyst cannot rely only on the user-agent field to spot an anomaly. Never whitelist a user agent, even if it looks natural. User agent-based anomaly/threat detection/hunting is an additional data source to check and is useful when there is an obvious anomaly. If you are unsure about a value, you can conduct a web search to validate your findings with the default and normal user-agent info ([**example site**](https://developers.whatismybrowser.com/useragents/explore/)).
+
+  
+
+User Agent analysis in a nutshell:  
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filter</b></td></tr><tr><td>Global search.</td><td><ul><li style="text-align:left"><code>http.user_agent</code></li></ul></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem"><span style="font-weight:bolder">Research outcomes&nbsp;</span>for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left">Different user agent information from the same host in a short time notice.</li><li style="text-align:left">Non-standard and custom user agent info.</li><li style="text-align:left">Subtle spelling differences. <b>("Mozilla" is not the same as&nbsp; "Mozlilla" or "Mozlila")</b></li><li style="text-align:left">Audit tools info like Nmap, Nikto, Wfuzz and sqlmap in the user agent field.</li><li style="text-align:left">Payload data in the user agent field.</li></ul></td><td><ul><li style="text-align:left"><code>(http.user_agent contains "sqlmap") or (http.user_agent contains "Nmap") or (http.user_agent contains "Wfuzz") or (http.user_agent contains "Nikto")</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-22-07-04-48.png)
+![](2023-02-22-07-05-04.png)
+
+**Log4j Analysis**
+
+A proper investigation starts with prior research on threats and anomalies going to be hunted. Let's review the knowns on the "Log4j" attack before launching Wireshark.  
+
+Log4j vulnerability analysis in a nutshell:  
+
+<table class="table table-bordered"><tbody><tr><td><b>Notes</b></td><td><b>Wireshark Filters</b></td></tr><tr><td><div style="text-align:left"><p><span style="font-size:1rem"><b>Research outcomes&nbsp;</b>for grabbing the low-hanging fruits:</span></p><ul style="text-align:center"><li style="text-align:left">The attack starts with a "POST" request</li><li style="text-align:left">There are known cleartext patterns: "<b>jndi:ldap</b>" and "<b>Exploit.class</b>".</li></ul></div></td><td><ul><li style="text-align:left"><code style="font-size:14px">http.request.method == "POST"</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">(ip contains "jndi") or ( ip contains "Exploit")</code></li></ul><ul><li style="text-align:left"><code>(frame contains "jndi") or ( frame contains "Exploit")</code></li></ul><ul><li style="text-align:left"><code>(http.user_agent contains "$") or (http.user_agent contains "==")</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-22-07-05-51.png)
+![](2023-02-22-07-06-11.png)
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/http/user-agent.cap" file.
+
+Investigate the user agents. What is the number of anomalous  "user-agent" types?
+
+- 1) The answer is not the number of packets. It is the number of anomalous user-agent types. You need to filter the "user agent" info "as a column" and conduct a manual investigation of the packet details to spot the anomalies. 2) In addition to the obvious "non-standard" and modified user agent types: Does "Windows NT 6.4" exist?
+- Windows NT 6.4, Nmap, Wfuzz, sqlmap, jndi, Mozlila (frame 52)
+- 6 total, would be easier in TShark using unique filter
+
+What is the packet number with a subtle spelling difference in the user agent field?
+
+- 52 which was found earlier
+
+Use the "Desktop/exercise-pcaps/http/http.pcapng" file.
+Locate the "Log4j" attack starting phase. What is the packet number?
+
+- `http contains jndi`
+- 444
+
+Locate the "Log4j" attack starting phase and decode the base64 command. What is the IP address contacted by the adversary? (Enter the address in defanged format and exclude "{}".)
+
+- on frame 444 copy the User-Agent value to the clipboard and decode on cyberchef.org website
+- 62[.]210[.]130[.]250
+
