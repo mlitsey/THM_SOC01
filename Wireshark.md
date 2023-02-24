@@ -1219,6 +1219,7 @@ What is the frame number of the "Client Hello" message sent to "accounts.google.
 - Looked in a frame to find a server name and then added that to the filter
 - 16
 - Hint from THM: "Protocol Details Pane --> TLS --> Handshake Protocol --> Extension: server_name" can help.
+
 ![](2023-02-23-08-18-20.png)
 
 Decrypt the traffic with the "KeysLogFile.txt" file. What is the number of HTTP2 packets?
@@ -1229,6 +1230,7 @@ Decrypt the traffic with the "KeysLogFile.txt" file. What is the number of HTTP2
 Go to Frame 322. What is the authority header of the HTTP2 packet? (Enter the address in defanged format.)
 
 - safebrowsing[.]googleapis[.]com
+
 ![](2023-02-23-08-21-26.png)
 
 Investigate the decrypted packets and find the flag! What is the flag?
@@ -1236,7 +1238,126 @@ Investigate the decrypted packets and find the flag! What is the flag?
 - remove previous filters
 - click search (magnifiying glass) -> Packet details -> Narrow (UTF-8/ASCII) -> String -> `flag{` -> find
 - FLAG{THM-PACKETMASTER}
+
 ![](2023-02-23-08-34-30.png)
 
 ## _**9: Bonus: Hunt Cleartext Credentials!**_
+
+Up to here, we discussed how to inspect the packets for specific conditions and spot anomalies. As mentioned in the first room, Wireshark is not an IDS, but it provides suggestions for some cases under the expert info. However, sometimes anomalies replicate the legitimate traffic, so the detection becomes harder. For example, in a cleartext credential hunting case, it is not easy to spot the multiple credential inputs and decide if there is a brute-force attack or if it is a standard user who mistyped their credentials.
+
+As everything is presented at the packet level, it is hard to spot the multiple username/password entries at first glance. The detection time will decrease when an analyst can view the credential entries as a list. Wireshark has such a feature to help analysts who want to hunt cleartext credential entries.
+
+Some Wireshark dissectors (FTP, HTTP, IMAP, pop and SMTP) are programmed to extract cleartext passwords from the capture file. You can view detected credentials using the **"Tools --> Credentials"** menu. This feature works only after specific versions of Wireshark (v3.1 and later). Since the feature works only with particular protocols, it is suggested to have manual checks and not entirely rely on this feature to decide if there is a cleartext credential in the traffic.
+
+Once you use the feature, it will open a new window and provide detected credentials. It will show the packet number, protocol, username and additional information. This window is clickable; clicking on the packet number will select the packet containing the password, and clicking on the username will select the packet containing the username info. The additional part prompts the packet number that contains the username.
+
+![](2023-02-24-06-30-36.png)
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/bonus/Bonus-exercise.pcap" file.
+
+What is the packet number of the credentials using "HTTP Basic Auth"?
+
+- Tools -> Credentials
+-237
+
+What is the packet number where "empty password" was submitted?
+
+- Click on each Packet Number and it will jump to that frame without closing the window
+- 170
+
+![](2023-02-24-06-39-53.png)
+![](2023-02-24-06-41-03.png)
+
+## _**10: Bonus: Actionable Results!**_
+
+You have investigated the traffic, detected anomalies and created notes for further investigation. What is next? Not every case investigation is carried out by a crowd team. As a security analyst, there will be some cases you need to spot the anomaly, identify the source and take action. Wireshark is not all about packet details; it can help you to create firewall rules ready to implement with a couple of clicks. You can create firewall rules by using the **"Tools --> Firewall ACL Rules"** menu. Once you use this feature, it will open a new window and provide a combination of rules (IP, port and MAC address-based) for different purposes. Note that these rules are generated for implementation on an outside firewall interface.  
+
+Currently, Wireshark can create rules for:
+
+- Netfilter (iptables)
+- Cisco IOS (standard/extended)
+- IP Filter (ipfilter)
+- IPFirewall (ipfw)
+- Packet filter (pf)
+- Windows Firewall (netsh new/old format)
+
+![](2023-02-24-06-42-47.png)
+
+**Questions**
+
+Use the "Desktop/exercise-pcaps/bonus/Bonus-exercise.pcap" file.
+
+Select packet number 99. Create a rule for "IPFirewall (ipfw)". What is the rule for "denying source IPv4 address"?
+
+- select packet 99
+- Tools -> Firewall ACL Rules
+- Create rules for IPFirewall (ipfw)
+- `add deny ip from 10.121.70.151 to any in`
+
+![](2023-02-24-06-48-00.png)
+
+Select packet number 231. Create "IPFirewall" rules. What is the rule for "allowing destination MAC address"?
+
+- select packet 231
+- Tools -> Firewall ACL Rules
+- Create rules for IPFirewall (ipfw)
+- uncheck Deny
+- `add allow MAC 00:d0:59:aa:af:80 any in`
+
+![](2023-02-24-06-51-09.png)
+
+## _**11: Conclusion**_
+
+Congratulations! You just finished the "Wireshark: The Traffic Analysis" room.
+
+In this room, we covered how to use the Wireshark to detect anomalies and investigate events of interest at the packet level. Now, we invite you to complete the Wireshark challenge room: [**Carnage**](https://tryhackme.com/room/c2carnage), [**Warzone 1**](https://tryhackme.com/room/warzoneone) and [**Warzone 2**](https://tryhackme.com/room/warzonetwo).
+
+Wireshark is a good tool for starting a network security investigation. However, it is not enough to stop the threats. A security analyst should have IDS/IPS knowledge and extended tool skills to detect and prevent anomalies and threats. As the attacks are getting more sophisticated consistently, the use of multiple tools and detection strategies becomes a requirement. The following rooms will help you step forward in network traffic analysis and anomaly/threat detection.  
+
+- [**NetworkMiner**](https://tryhackme.com/room/networkminer)
+- [**Snort**](https://tryhackme.com/room/snort)
+- [**Snort Challenge -  The Basics**](https://tryhackme.com/room/snortchallenges1)
+- [**Snort Challenge - Live Attacks**](https://tryhackme.com/room/snortchallenges2)
+- [**Zeek**](https://tryhackme.com/room/zeekbro)
+- [**Zeek Exercises**](https://tryhackme.com/room/zeekbroexercises)
+- [**Brim**](https://tryhackme.com/room/brim)
+
+
+# Wireshark Filters
+
+This is a hidden room and I found it on the Chris Greer YouTube channel. 
+
+[Video](https://youtu.be/-MLkdg4s4ew)
+
+[Wireshark Filters Room](https://tryhackme.com/room/wiresharkfilters)
+
+## _**1: Introduction**_
+
+Filtering traffic is an important skill to master with Wireshark. After all, we can capture millions of packets on a busy network in just a few minutes. Finding meaningful network traffic can be like finding a needle in a haystack. 
+
+This room is designed to hone your skills with Wireshark display filters. We will start at the basics - IP address, TCP port number, protocol filtering, then progress to more complex filters, like identifying open ports, usernames and passwords, or TCP behaviors that look a little strange.
+
+Note that display filters are not the same as capture filters. Capture filters only collect the specified traffic on the network and can be applied in Wireshark on the initial screen. They are much simpler than display filters and use a different syntax. For more information on capture filters, see here - [https://wiki.wireshark.org/CaptureFilters](https://wiki.wireshark.org/CaptureFilters)
+
+**Accessing The Task Files**
+
+The PCAP files for each task can be downloaded directly and opened locally in Wireshark on your machine. To successfully complete all the tasks, you will need version 3.6 or later. Alternately, you can access the VM and the files using OpenVPN.
+
+- Start the VM using the button above
+- RDP to the machine using OpenVPN or the AttackBox
+- The login information is - Username: `thm` Password: `tryhackme`
+
+The PCAP files are located in the Task Files folder on the desktop. Fire up Wireshark on the VM and let's get to it!
+
+Note:
+
+Just a note before we dive in - we understand that Wireshark display filters can be difficult to remember. That is why it can be difficult to find the packets you are looking for. Don't forget that Wireshark helps you with a built-in cheat sheet! When you select a field in a packet, look at the bottom left of the display. You will find the syntax for filtering on the header location that you selected (see where it says tcp.flags.syn below). This is a great way to remember how to set a filter and learn new ones.
+
+![](2023-02-24-07-04-25.png)
+
+Let's dig.
+
+## _**2: Protocol Filters**_
 
