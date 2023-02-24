@@ -1266,6 +1266,7 @@ What is the packet number where "empty password" was submitted?
 
 - Click on each Packet Number and it will jump to that frame without closing the window
 - 170
+- Can also filter on `ftp.request.command == "PASS"` and find the packet without a password in the Info column.
 
 ![](2023-02-24-06-39-53.png)
 ![](2023-02-24-06-41-03.png)
