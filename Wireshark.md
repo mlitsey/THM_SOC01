@@ -1362,3 +1362,154 @@ Let's dig.
 
 ## _**2: Protocol Filters**_
 
+The most simple filters to remember are protocol filters. For the most part, they are the same as their name. For example, if you want to filter for DNS, use the dns filter. If you want all the TCP traffic, just use `tcp`. Want to see the ARP traffic on the network? Use the `arp` filter. 
+
+These are great filters to isolate a protocol quickly and when we want to eliminate traffic from a PCAP that we are not interested in. For example, when we know that ARP is working or other protocols such as LLDP, we can use a protocol filter to remove this traffic using the not or ! operator. This filter might look like `!arp`
+
+You can also extend protocol filters to include specific values within the headers. These are indicated by a `.` and then the identifier of the header field(s). For example, if we wanted to focus on the source address of an IP packet, we could use the `ip.src` filter to identify that. Or if TCP SYNs were our focus, `tcp.flags.syn` would be the field to focus on. You can also find more examples of Display filters in the Wireshark Wiki - [https://www.wireshark.org/docs/dfref/](https://www.wireshark.org/docs/dfref/).
+
+We will learn more as we go, but these are the basics. Now let's try our hand! When answering the following questions, remember to peek at the lower right of the Wireshark display to show the number of packets that meet the filter. Use the attached VM or download the PCAPs for the given task to use with your own Wireshark instance. Now let's dig in!
+
+![](2023-02-27-07-56-21.png)
+
+**Questions**
+
+How many ARP packets are in this pcap?
+
+- `apr`
+- 1032
+
+How many IP packets are in this pcap?
+
+- `ip`
+- 6342
+
+What is the MAC address for 192.168.56.1?
+
+- `ip.addr == 192.168.56.1`
+- packet 1035 the IP is the destination
+- Look under Ethernet II Dst:
+- 0a:00:27:00:00:00
+
+![](2023-02-27-08-31-05.png)
+
+How many ICMP packets?
+
+- `icmp`
+- 1064
+
+Remove all ICMP packets. How many are left over?
+
+- `!icmp`
+- 6310
+
+Filter for TCP. How many packets are there?
+
+- `tcp`
+- 6293
+
+Keep the filter applied for TCP. Notice that some ICMP packets are still displayed (TCP is encapsulated within the ICMP header, which is why it matched the TCP filter). Can you add a filter to this statement that will remove all ICMP? How many packets are left over that are TCP only?
+
+- `tcp && (!icmp)`
+- 5269
+
+Filter for UDP. Remove any ICMP encapsulated UDP packets. How many meet this filter?
+
+- `udp && !(icmp)`
+- 9
+
+Filter for only ICMP Echo Reply packets. How many do you find?
+
+- `icmp`
+- packet 7094 is the first Echo (ping) reply, use this to get new filter
+- `icmp.type == 0`
+- 16
+
+![](2023-02-27-08-42-47.png)
+
+
+## _**3: IP Filters**_
+
+IP address or address range filters are two of the most common filters you will use. In Wireshark, we can filter for a specific address, a subnet, a conversation, or a range of addresses. Remember, Wireshark helps you to create these filters as you build them. You can start by entering "ip" (no quotation marks) in the display filter bar and looking at the possible options. 
+
+![](2023-02-27-08-46-17.png)
+
+First, we need to identify the direction of traffic to filter on. Is the IP address the source of the traffic, the destination, or if it doesn't matter, both? Let's first take a peek at those filters - assume that the host we are filtering for is 10.10.10.1.
+
+When the IP is the source of traffic
+
+`ip.src == 10.10.10.1`
+
+ If the IP is the destination of the traffic
+
+ `ip.dst == 10.10.10.1`
+
+When we want both directions
+
+`ip.addr == 10.10.10.1`
+
+To filter for a subnet
+
+`ip.addr == 10.10.10.0/24`
+
+For each of these filters, you can decide whether to use the spaces around the operator or not. For example, `ip.src==10.10.10.1` is the same as `ip.src == 10.10.10.1`
+
+ Another common type of IP filter is a conversation filter where both endpoints are specified in the filter. This is when both endpoints are specified in the filter. To build a conversion filter, it is easiest to use the right-click feature in Wireshark after finding a packet that contains both endpoints. Select the packet, right-click it, select **_Conversation Filter -> IP_**.
+
+![](2023-02-27-08-47-28.png)
+
+This will automatically create and apply a filter for the two endpoints in the selected packet. The filter will use "ip.addr" to display traffic in both directions for each endpoint as well as the "and" operator to ensure that both conditions of the filter are met (both IPs are in the same packet). In this example, we see that we can either use the "==" symbols or the English-like equivalent "eq" to accomplish the same thing. The English-like and C-like operators can be used interchangeably in the same filter.
+
+`ip.addr eq 10.10.10.1 and ip.addr == 10.10.10.2`  
+
+**Combining Filters (and, or)**
+
+Other common expressions that we use when combining filters include: (remember we can use either the English or symbol; or use them interchangeably)  
+
+<table class="table table-bordered"><tbody><tr><td>or</td><td>||</td></tr><tr><td>and</td><td>&amp;&amp;</td></tr><tr><td>not</td><td>!</td></tr></tbody></table>
+
+Use the Task3 PCAP in the Task Files directory on the VM's Desktop or download the PCAP to use with your own Wireshark instance and let's dig!
+
+**Questions**
+
+Filter for all packets to and from the host at 172.67.27.10. How many meet the filter?
+
+- `ip.addr == 172.67.27.10`
+- 320
+
+How many packets are from the DNS server?
+
+- `dns`
+- look for the source IP on a query response with souce port 53 -> apply new filter
+- `ip.src == 192.168.4.1`
+- 6
+
+Filter for the busiest IP conversation in the pcap. How many packets meet this filter?
+
+- clear old filter
+- Statistics -> Conversations -> IPv4 tab
+- 714
+
+![](2023-02-27-09-18-24.png)
+
+There are both http and https conversations in this pcap. Filter for all traffic to and from the first two web servers - 104.22.55.228 and 172.67.27.10. How many packets meet the filter?
+
+- `ip.addr == 104.22.55.228 || ip.addr == 172.67.27.10`
+- used the `OR` opperator `||`
+- 352
+
+What symbol(s) can be used in place of the word "and" when setting a filter?
+
+- `&&`
+
+What symbol can be used in place of the word "not"?
+
+- `!`
+
+What is the syntax to remove all arp traffic from a pcap?
+
+- `!arp`
+
+
+## _**4: TCP Filters**_
+
