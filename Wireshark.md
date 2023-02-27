@@ -1489,6 +1489,8 @@ Filter for the busiest IP conversation in the pcap. How many packets meet this f
 - clear old filter
 - Statistics -> Conversations -> IPv4 tab
 - 714
+- or right click the 714 line -> apply as filter -> selected -> A<->B (gives a new filter)
+- `ip.addr==10.0.2.15 && ip.addr==52.85.193.57`
 
 ![](2023-02-27-09-18-24.png)
 
@@ -1497,6 +1499,8 @@ There are both http and https conversations in this pcap. Filter for all traffic
 - `ip.addr == 104.22.55.228 || ip.addr == 172.67.27.10`
 - used the `OR` opperator `||`
 - 352
+- `ip.addr in {104.22.55.228, 172.67.27.10}`
+- Will give the same result
 
 What symbol(s) can be used in place of the word "and" when setting a filter?
 
@@ -1512,4 +1516,413 @@ What is the syntax to remove all arp traffic from a pcap?
 
 
 ## _**4: TCP Filters**_
+
+The Transport Control Protocol (TCP) is the protocol that supports most mission-critical applications and many scans, enumerations, and exploits. We will learn to filter for TCP ports, handshakes, resets, and errors in this task. This skill can help no matter what color cybersecurity team you're on.
+
+**TCP Ports**
+
+To filter for a port, such as port 80, use this syntax `tcp.port==80`This is a quick way to isolate traffic on a specific port. If we need to filter for a port as a source or destination, use the `tcp.srcport` or `tcp.dstport` fields to focus on packets in one direction. 
+
+To isolate traffic on more than one port, use the `in` operator. Here is an example of how to filter for all traffic on ports 80 and 443: 
+
+`tcp.port in {80 443}`
+
+For all traffic in a range of port numbers, use `tcp.port in {8000..8004}`
+
+This will filter for all traffic on ports 8000-8004. 
+
+**TCP Flags**
+
+  Let's learn how to filter for specific TCP functions, such as the handshake and errors. In most scans and enumerations, TCP SYNs, FINs, and resets are important to know how to filter for. When things go wrong, we need to be able to isolate retransmissions and zero windows. Here are some filters to keep on your list:
+
+- TCP SYNs: `tcp.flags.syn==1`
+- TCP FINs: `tcp.flags.fin==1`
+- TCP Resets: `tcp.flags.reset==1`
+
+**TCP Conversations**
+
+A common filter to set is for a TCP conversation between two endpoints. A common filter to set is for a TCP conversation between two endpoints which involves IP addresses and client and server port numbers, known as the four-tuple (Source IP and Port, Dest IP and Port). This is a simple filter to set in Wireshark when using right-click filtering. Select a packet that is a part of the conversation you want to filter for and click **Conversation Filter -> TCP**.
+
+![](2023-02-27-09-53-36.png)
+
+To filter for TCP problems, like retransmissions, out-of-orders, and duplicate acknowledgments (mostly indicating packet loss on the network), use the `tcp.analysis.flags` filter.
+
+Let's practice with some TCP filters. Use the same PCAP for task 3 - IP filters, or access the Task Files on the VM.
+
+**Questions**
+
+How many packets in this pcap have the TCP SYN flag set?
+
+- `tcp.flags.syn==1`
+- 22
+
+How many have the FIN flag set?
+
+- `tcp.flags.fin==1`
+- 11
+
+How many TCP resets?
+
+- `tcp.flags.reset==1`
+- 4
+
+How many SYNs were sent on TCP port 80? (Not including TCP SYN/ACKs)
+
+- `tcp.flags.syn==1 && tcp.port == 80 && !tcp.flags.ack==1`
+- 4
+- could also use this filter but not recommended
+- `tcp.port == 80 and tcp.flas == 2`
+
+![](2023-02-27-13-12-37.png)
+
+Find the busiest TCP connection in this pcap. What is the client port number?
+
+- Statistics -> Conversations -> TCP tab -> sort packets -> Port A (port 443 is https)
+- 47650
+
+![](2023-02-27-10-06-41.png)
+
+How many unique TCP connections are in this pcap?
+
+- Statistics -> Conversations -> TCP tab -> you can see the number of conversations on the tab in previous image
+- 11
+
+What filter can we use to find TCP errors?
+
+- `tcp.analysis.flags`
+
+What operator allows us to quickly filter for several different ports?
+
+- `in`
+
+Filter for all traffic on TCP ports 47640-47650. How many packets meet this filter?
+
+- `tcp.port in {47640..47650}`
+- 714
+
+
+## _**5: DNS Filters**_
+
+Domain Name Service (DNS) is known as the phone book of the internet. This service allows us to quickly translate between names and IP addresses, or the other way around. When analyzing network traffic, DNS filters can help us to isolate important information for key systems on the network. In this task, we will learn how to quickly set filters for these fields. 
+
+**Requested Name**
+
+In large pcaps, there will probably be quite a few DNS conversations. To filter on all DNS requests and responses, use the flags area of the header to find the "response" field.
+
+![](2023-02-27-12-40-32.png)
+
+After selecting this field, notice at the bottom left of the screen that creating a filter for DNS queries would use the "dns.flags.response" syntax. Filtering for all queries would be `dns.flags.response==0`. Filtering for responses would be `dns.flags.response==1`. Within the query, you can isolate what name is being resolved with the "dns.qry.name" field.
+
+![](2023-02-27-12-41-00.png)
+
+To add this name as a filter without needing to type anything, you can click on [www.tryhackme.com](http://www.tryhackme.com/) in the name field and drag it up to the display filter bar. This will set a filter for all DNS queries or responses for this domain name. By the way - the "dns.qry.name" field is a great one to add as a column! Just right-click it and select "Apply as Column..."
+
+![](2023-02-27-12-41-28.png)
+
+It's also a great time to learn one of the special operators in Wireshark, the "contains" function. This operator is used when we want to check if a string is present anywhere in a packet or specific field. For example, if we wanted to filter for all DNS requests or responses that include the word "hack", we can use the contains operator. 
+
+`dns.qry.name contains hack`
+
+The contains operator is case-sensitive, so keep that in mind when using this feature. To do a case insensitive search, use the "matches" operator, which allows us to use Perl-compatible regular expressions in our filters--more on regular expressions in another room.
+
+`dns.qry.name matches hack`
+
+**Query Type**
+
+A DNS request also includes the type of information that we hope to get back from a server. Here are the most common record types and identification numbers that you will observe in DNS traffic:
+
+<table class="table table-bordered"><tbody><tr><td><span style="font-size:18px"><b>Record Type</b></span></td><td><span style="font-size:18px"><b>Type ID Number</b></span></td><td><span style="font-size:18px"><b>Description</b></span></td></tr><tr><td>A</td><td>1</td><td>IPv4 Address Record</td></tr><tr><td>AAAA</td><td>28</td><td>IPv6 Address Record</td></tr><tr><td>CNAME</td><td>5</td><td>Canonical Name or Alias</td></tr><tr><td>PTR</td><td>12</td><td><span>Reverse Lookup - Returns a DNS Name for an IP</span></td></tr><tr><td>SOA</td><td>6</td><td>Start of Authority Record (Authoritative Name Server)</td></tr><tr><td>AXFR</td><td>252</td><td>Authoritative Zone Transfer</td></tr></tbody></table>
+
+We can set DNS filters searching for specific record types using the assigned value for each type. For example, the A record for a host address is type ID 1. To filter for these types of queries, we can use this `dns.qry.type==1` filter. 
+
+Now let's get some practice with setting filters for DNS traffic. Download the PCAP for this task or access it in the Task Files folder of the VM. Let's dig!
+
+**Questions**
+
+What is the address of the DNS server?
+
+- `dns`
+- look for the first query response (packet 3), source IP
+- 192.168.4.1
+
+![](2023-02-27-12-50-33.png)
+
+Set a filter for DNS queries (requests). How many packets match the filter?
+
+- `dns.flags.response == 0`
+- 44
+
+Set a filter for DNS responses. How many packets match this filter?
+
+- `dns.flags.response == 1`
+- 44
+
+How many packets contain the word "hack" in the DNS query name? (Include both requests and responses)
+
+- `dns.qry.name contains hack`
+- 12
+
+Packet 1 is a request for www.tryhackme.com. In the response, there are three addresses resolved to this name. What is the third address in the response?
+
+- packet 3 under Domain Name system -> Answers
+- 104.22.54.228
+
+![](2023-02-27-12-57-01.png)
+
+How long will this record be stored in the client cache? (In seconds)
+
+- packet 3 under Domain Name system -> Answers -> third answer -> Time to live
+- 300
+
+A response can carry multiple records. Which packet has the most Answer RRs? (Please give the frame number)
+
+- `dns.count.answers > 5`
+- left 1 record, packet 62 -> Domain Name System -> Answer RRs
+- 9
+- Frame 62
+- Could also add the ANswer RRs as a column and sort on it
+
+![](2023-02-27-13-17-45.png)
+
+What filter would display all DNS queries (and responses) for IPv6 addresses?
+
+- `dns.qry.type==28`
+
+
+## _**6: Special Operators**_
+
+Some common operators in Wireshark include symbols like ==, &&, !, and even > or <.  
+
+There are also some special operators that we can use to find specific data sets: in, contains, and matches.
+
+We already have covered the "in" operator in another task, but just to review - "in" allows us to set a list of ports, query names, or other values in a field. For example, this filter will display all TCP traffic for ports 80, 443, and 8000-8009. 
+
+`tcp.port in {80 443 8000..8009}`
+
+The "in" operator can also be used for other values as well, just make sure to separate the values with a comma:
+
+`http.request.method in {GET,POST}`
+
+When you need to search for a word or string in a PCAP, regardless of its protocol or location in the packet, using the special operator "contains" can be helpful. To search for the word "hack" in any protocol, at any location in the frame, use this filter:
+
+`frame contains "hack"`
+
+If you aren't sure if the string should be "Hack", "hAck", or some other case, use the matches operator, which is case insensitive:
+
+`frame matches "hack"`
+
+These filters are great to remember when you are digging for clear-text login names, passwords, folders, or other strings that are on the wire. We can also use regular expressions with the matches operator to indicate what we are looking for. For example, if we wanted to search for all packets that contain file extensions for .php, .txt, or .exe, we could use this filter:
+
+`frame matches "\.(?i)(php|txt|exe|)"`
+
+If case isn't a big deal, you could simplify this to:  
+
+`frame matches "\.(php|txt|exe)"`
+
+As you can see, regex filters can get pretty messy. But they are great when we are digging for signatures, files, or other interesting gems in the pcaps. Any Perl-compatible regular expression should work with the matches filter. So let's try it out! We will get more practice with these operators in the Usernames and Passwords task. 
+
+Use the PCAP for task 3, or access this file in the Task Files folder of the VM. Let's dig.
+
+**Questions**
+
+How many packets contain the word "assets"? (Regardless of case)
+
+- `frame matches "assets"`
+- 10
+
+What packet number contains the string "AWS"?
+
+- `frame contains "AWS"`
+- 804
+
+How many packets contain the strings ".org" or ".com"?
+
+- `frame matches "(org|com)"`
+- 28
+
+Filter for all traffic on TCP ports 60404 through 60406. How many packets match that filter?
+
+- `tcp.port in {60404..60406}`
+- 32
+
+How many packets contain the string "GET"?
+
+- `frame contains "GET"`
+- 2
+
+
+## _**7: Putting it Together: Filtering for Scans**_
+
+Whether we are generating a scan as a pentester or searching for one as a blue-teamer, we should be able to filter for and identify this behavior in a PCAP.
+
+Before we jump into the packets and get our hands dirty, there is one last filter you should know about, especially when looking for scans. Wireshark has a special TCP field called TCP Completeness (Supported in Wireshark version 3.6 and later). TCP conversations are said to be complete when they have a full handshake, data exchanged, and a closing handshake (FIN, FIN/ACK, ACK). This value shows us how far a TCP conversation got in the capture and whether a reset is seen or not. Here are some values we need to understand. 
+
+- 1 = SYN
+- 2 = SYN/ACK
+- 4 = ACK
+- 8 = Data
+- 16 = FIN
+- 32 = Reset
+
+![](2023-02-27-13-51-06.png)
+
+These values add up as they are present in the conversation, showing the completeness field's value. For example, to filter for conversations that only have the full handshake (SYN, SYN/ACK, ACK): `tcp.completeness==7` (1+2+4)
+
+Stealth scans in NMAP will have a tcp completeness value of 35. These scans are only the SYN, SYN/ACK, and a Reset (1+2+32). An attempt that is filtered would be `tcp.completeness==1`. A port that is closed would be `tcp.completeness==37`(SYN, RST/ACK - 1+32+4). This is a good way to filter for connection attempts that were successful vs unsuccessful. 
+
+Ok, now let's open the PCAP for this task and let's dig!
+
+**Questions**
+
+How many packets have the TCP SYN flag set?
+
+- `tcp.flags.syn==1`
+- 1023
+
+What is the IP address of the machine that is conducting the TCP SYN (Stealth) scan?
+
+- `tcp.completeness==35`
+- right click the first frame/packet -> follow - tcp stream
+- 192.168.56.102
+
+![](2023-02-27-14-04-14.png)
+![](2023-02-27-14-03-48.png)
+
+Which station is being scanned? What is the IP address?
+
+- Look at the destination IP in the previous image
+- 192.168.56.101
+
+How many TCP ports were open on the server for this port scan? (You are filtering for SYN/ACKs from the server.)
+
+- `tcp.flags == 0x012`
+- 23
+- Looking for the [SYN, ACK]
+
+What is the lowest port number that is open on the server?
+
+- `tcp.flags == 0x012`
+- click statistics -> conversations -> tcp tab -> sort Port B
+- 21
+
+![](2023-02-27-14-58-18.png)
+
+What is the highest port number that is open on the server?
+
+- 8180
+
+![](2023-02-27-14-58-42.png)
+
+Filter for traffic on TCP port 21. Is this a stealth (half-open) or a full-connect scan?
+
+- `tcp.port==21`
+- half-open
+- SYN, SYN/ACK, RST pattern
+
+What is the TCP Conversation completeness value of this conversation?
+
+- 35
+
+When Nmap does a stealth scan, the SYN often has a low TCP window value. What is this value?
+
+- 1024
+
+![](2023-02-27-14-22-17.png)
+
+To filter for a TCP Window value, what is the name of the field we would use? (Examples of fields: tcp.port or tcp.seq)
+
+- tcp.window_size_value
+
+How many of the ports that were scanned on the server are closed?
+
+- `tcp.completeness==37`
+- 1954
+- this didn't match the answer wanted
+- Hint: Filter for all TCP resets originating from the server.
+- `ip.src == 192.168.56.101 and tcp.flags.reset==1`
+- 977
+- `tcp.completeness==37 and tcp.flags.reset==1`
+
+
+
+## _**8: Filtering for Username/Passwords**_
+
+Your FTP server has been hacked! 
+
+An attacker was able to login and access several confidential files. But how did they get in? 
+
+Let's dig through this pcap and find out! Make sure to use the correct case when answering these questions.
+
+**Questions**
+
+How many unique TCP conversations are in this pcap? 
+
+- statistics -> conversations -> tcp tab
+- 17
+
+![](2023-02-27-15-10-27.png)
+
+What port on the server is the attacker connecting to?
+
+- 21
+
+What version of vsFTPd is the server running?
+
+- `frame contains "vsFTPd"`
+- 2.3.4
+
+What is the first username that the attacker attempts to connect to? 
+
+- `ftp.request.command == "USER"`
+- ADMIN
+
+![](2023-02-27-15-14-25.png)
+
+The first login attempt is in packet 81. Set a filter for this TCP connection. What password is attempted for this login?
+
+- right click packet 81 -> follow -> tcp stream
+- USER
+
+![](2023-02-27-15-17-18.png)
+
+Staying on this TCP connection, what is the next username attempted by the attacker?
+
+- FTPUSER
+
+What is the FTP response code for "Login incorrect"?
+
+- 530
+
+What is the FTP response code for "Login successful"?
+
+- `frame contains "Login successful"`
+- 230
+
+![](2023-02-27-15-20-27.png)
+
+What is the username:password for the login that finally works?
+
+- right click -> follow -> tcp stream
+- msfadmin:msfadmin
+
+![](2023-02-27-15-21-20.png)
+
+What is the display filter for all FTP successful login packets? (use a space before and after the operator)
+
+- `ftp.response.code == 230`
+
+How many times does the attacker try to authenticate with the username CHRIS?
+
+- `ftp.request.arg == "CHRIS"`
+- 7
+- `frame contains "USER CHRIS"` also works
+
+
+## _**9: Conclusion**_
+
+Wireshark is the most popular protocol analyzer in the world. Learning how to use it for finding and filtering key traffic is an important skill for anyone in the cybersecurity field.
+
+Where do you go from here? Make sure to complete all the Wireshark rooms here on TryHackMe. There are also some great free resources for learning Wireshark on the wireshark.org page - [https://www.wireshark.org/#learnWS](https://www.wireshark.org/#learnWS). Remember, you can also find more examples of Display filters in the Wireshark Wiki - [https://www.wireshark.org/docs/dfref/](https://www.wireshark.org/docs/dfref/)
+
+For a mini-course on Wireshark, check out the [Wireshark Masterclass](https://youtu.be/OU-A2EmVrKQ) on YouTube.
 
