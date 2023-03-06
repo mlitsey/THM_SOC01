@@ -207,5 +207,168 @@ What is the **/c** option for?
 - Maximum number of events to read
 
 
-## _**Get-WinEvent**_
+## _**4: Get-WinEvent**_
+
+On to the next tool. This is a PowerShell cmdlet called **Get-WinEvent**. Per Microsoft, the Get-WinEvent cmdlet "gets events from event logs and event tracing log files on local and remote computers." It provides information on event logs and event log providers. Additionally, you can combine numerous events from multiple sources into a single command and filter using XPath queries, structured XML queries, and hash table queries.
+
+**Note**: The **Get-WinEvent** cmdlet replaces the **Get-EventLog** cmdlet. 
+
+As with any new tool, it's good practice to read the Get-Help documentation to become acquainted with its capabilities. Please refer to the Get-Help information online at [docs.microsoft.com](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent?view=powershell-5.1). 
+
+Let us look at a couple of examples of how to use Get-WinEvent, as supported by the documentation. Some tasks might require some PowerShell-fu, while others don't. Even if your PowerShell-fu is not up to par, fret not; each example has a detailed explanation of the commands/cmdlets used. 
+
+### Example 1: Get all logs from a computer
+
+Here, we are obtaining all event logs locally, and the list starts with classic logs first, followed by new Windows Event logs. It is possible to have a log's **RecordCount** be zero or null.
+
+Powershell - Get-WinEvent Logs
+
+```
+Get-WinEvent -ListLog *
+
+LogMode   MaximumSizeInBytes RecordCount LogName
+-------   ------------------ ----------- -------
+Circular            15532032       14500 Application
+Circular             1052672         117 Azure Information Protection
+Circular             1052672        3015 CxAudioSvcLog
+Circular            20971520             ForwardedEvents
+Circular            20971520           0 HardwareEvents
+```
+
+### Example 2: Get event log providers and log names
+
+The command here will result in the event log providers and their associated logs. The **Name** is the provider, and **LogLinks** is the log that is written to.
+
+Powershell - Get-WinEvent Providers
+
+```
+Get-WinEvent -ListProvider *
+
+Name     : .NET Runtime
+LogLinks : {Application}
+Opcodes  : {}
+Tasks    : {}
+
+Name     : .NET Runtime Optimization Service
+LogLinks : {Application}
+Opcodes  : {}
+Tasks    : {}
+```
+
+### Example 3: Log filtering
+
+Log filtering allows you to select events from an event log. We can filter event logs using the **Where-Object** cmdlet as follows:
+
+Powershell - Get-WinEvent Filters
+
+```
+PS C:\Users\Administrator> Get-WinEvent -LogName Application | Where-Object { $_.ProviderName -Match 'WLMS' }
+
+   ProviderName: WLMS
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+12/21/2020 4:23:47 AM          100 Information
+12/18/2020 3:18:57 PM          100 Information
+12/15/2020 8:50:22 AM          100 Information
+12/15/2020 8:18:34 AM          100 Information
+12/15/2020 7:48:34 AM          100 Information
+12/14/2020 6:42:18 PM          100 Information
+12/14/2020 6:12:18 PM          100 Information
+12/14/2020 5:39:08 PM          100 Information
+12/14/2020 5:09:08 PM          100 Information
+```
+
+**Tip**: If you are ever working on a Windows evaluation virtual machine that is cut off from the Internet eventually, it will shut down every hour. ;^)   
+
+When working with large event logs, per Microsoft, it's inefficient to send objects down the pipeline to a `Where-Object` command. The use of the Get-WinEvent cmdlet's **FilterHashtable** parameter is recommended to filter event logs. We can achieve the same results as above by running the following command:
+
+Powershell - Get-WinEvent Filters
+
+```
+Get-WinEvent -FilterHashtable @{
+  LogName='Application' 
+  ProviderName='WLMS' 
+}
+```
+
+The syntax of a hash table is as follows:
+
+Hash Table Syntax
+
+```
+@{ <name> = <value>; [<name> = <value> ] ...}
+```
+
+Guidelines for defining a hash table are:  
+
+- Begin the hash table with an @ sign.
+- Enclose the hash table in braces {}
+- Enter one or more key-value pairs for the content of the hash table.
+- Use an equal sign (=) to separate each key from its value.
+
+**Note**: You don't need to use a semicolon if you separate each key/value with a new line, as in the screenshot above for the -FilterHashtable for `ProviderName='WLMS'`. 
+
+Below is a table that displays the accepted key/value pairs for the Get-WinEvent FilterHashtable parameter.
+
+![Get-WinEvent acceptable key/value pairs for the FilterHashtable parameter](https://assets.tryhackme.com/additional/win-event-logs/filter-hashtable.png)  
+
+When building a query with a hash table, Microsoft recommends making the hash table one key-value pair at a time. Event Viewer can provide quick information on what you need to build your hash table.
+
+![Windows Event Viewer displaying information about MsiInstaller application](https://assets.tryhackme.com/additional/win-event-logs/build-hash-table.png)  
+
+Based on this information, the hash table will look as follows:
+
+![FilterHashtable being applied on the Application logs for MsiInstaller as the ProviderName.](https://assets.tryhackme.com/additional/win-event-logs/msi-installer.png)  
+
+For more information on creating Get-WinEvent queries with FilterHashtable, check the official Microsoft documentation [docs.microsoft.com](https://docs.microsoft.com/en-us/powershell/scripting/samples/Creating-Get-WinEvent-queries-with-FilterHashtable?view=powershell-7.1).
+
+Since we're on the topic of Get-WinEvent and FilterHashtable, here is a command that you might find helpful (shared by [@mubix](https://twitter.com/mubix)): 
+
+Powershell - Get-WinEvent Filters
+
+```shell-source
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; ID=4104} | Select-Object -Property Message | Select-String -Pattern 'SecureString'
+```
+
+You can read more about creating hash tables in general [docs.microsoft.com](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_hash_tables?view=powershell-7.1).
+
+_**Questions**_ 
+
+Answer the following questions using the **[online](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/Get-WinEvent?view=powershell-7.1)** help documentation for **Get-WinEvent**
+
+Execute the command from **Example 1** (as is). What are the names of the logs related to **OpenSSH**?
+
+- `Get-WinEvent -ListLog *`
+- OpenSSH/Admin,OpenSSH/Operational
+
+![](2023-03-06-06-42-48.png)
+
+Execute the command from **Example 8**. Instead of the string **\*Policy\*** search for **\*PowerShell\***. What is the name of the 3rd log provider?
+
+- `Get-WinEvent -ListProvider *PowerShell*`
+- Microsoft-Windows-PowerShell-DesiredStateConfiguration-FileDownloadManager
+
+![](2023-03-06-06-45-37.png)
+
+Execute the command from **Example 9**. Use **Microsoft-Windows-PowerShell** as the log provider. How many event ids are displayed for this event provider?
+
+- `(Get-WinEvent -ListProvider Microsoft-Windows-PowerShell).Events | Format-Table Id, Description | Measure-Object`
+- 192
+
+![](2023-03-06-06-48-17.png)
+
+How do you specify the number of events to display?
+
+- -MaxEvents
+- [Link](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/Get-WinEvent?view=powershell-7.3#-maxevents)
+
+When using the **FilterHashtable** parameter and filtering by level, what is the value for **Informational**?
+
+- 4
+
+![](2023-03-06-07-01-22.png)
+
+
+## _**5: XPath Queries**_
 
