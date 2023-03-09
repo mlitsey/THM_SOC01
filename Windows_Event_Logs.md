@@ -372,3 +372,263 @@ When using the **FilterHashtable** parameter and filtering by level, what is the
 
 ## _**5: XPath Queries**_
 
+Now we will examine filtering events with **XPath**. The W3C created XPath, or **XML Path Language** in full, to provide a standard syntax and semantics for addressing parts of an XML document and manipulating strings, numbers, and booleans. The Windows Event Log supports a subset of [XPath 1.0](https://www.w3.org/TR/1999/REC-xpath-19991116/). 
+
+Below is an example XPath query along with its explanation:
+
+XPath Query
+
+```shell-session
+// The following query selects all events from the channel or log file where the severity level is less than or equal to 3 and the event occurred in the last 24 hour period. 
+XPath Query: *[System[(Level <= 3) and TimeCreated[timediff(@SystemTime) <= 86400000]]]
+```
+
+Based on [docs.microsoft.com](https://docs.microsoft.com/en-us/windows/win32/wes/consuming-events#xpath-10-limitations), an XPath event query starts with '**\***' or '**Event**'. The above code block confirms this. But how do we construct the rest of the query? Luckily the Event Viewer can help us with that. 
+
+Let's create an XPath query for the same event from the previous section. Note that both wevtutil and Get-WinEvent support XPath queries as event filters. 
+
+![Windows Event Viewer showing WLMS logs.](https://assets.tryhackme.com/additional/win-event-logs/xpath-2.png)  
+
+Draw your attention to the bottom half of the middle pane. In the Event Viewer section, the Details tab was briefly touched on. Now you'll see how the information in this section can be useful.   
+
+Click on the `Details` tab and select the `XML View` radio button. Don't worry if the log details you are viewing are slightly different. The point is understanding how to use the XML View to construct a valid XPath query.
+
+![Windows Event Viewer Details tab showing WLMS logs in XML View, with Event section highlighted.](https://assets.tryhackme.com/additional/win-event-logs/xpath-3a.png)
+
+The first tag is the starting point. This can either be an `*` or the word `Event`.
+
+The command so far looks like this: `Get-WinEvent -LogName Application -FilterXPath '*'`
+
+![Windows Event Viewer Details tab showing WLMS logs in XML View, with System section highlighted.](https://assets.tryhackme.com/additional/win-event-logs/xpath-3b.png)  
+
+Now we work our way down the XML tree. The next tag is `System`.
+
+Let's add that. Now our command is: `Get-WinEvent -LogName Application -FilterXPath '*/System/'`
+
+**Note**: Its best practice to explicitly use the keyword `System` but you can use an `*` instead as with the `Event` keyword. The query `-FilterXPath '*/*'` is still valid. 
+
+The **Event ID** is **100**. Let's plug that into the command. 
+
+![Windows Event Viewer Details tab showing WLMS logs in XML View, with EventID section highlighted.](https://assets.tryhackme.com/additional/win-event-logs/xpath-3c.png)  
+
+Our command now is: `Get-WinEvent -LogName Application -FilterXPath '*/System/EventID=100'`
+
+XPath Query Powershell
+
+```shell-session
+PS C:\Users\Administrator> Get-WinEvent -LogName Application -FilterXPath '*/System/EventID=100'
+
+   ProviderName: WLMS
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+12/21/2020 4:23:47 AM          100 Information
+12/18/2020 3:18:57 PM          100 Information
+12/15/2020 8:50:22 AM          100 Information
+12/15/2020 8:18:34 AM          100 Information
+12/15/2020 7:48:34 AM          100 Information
+12/14/2020 6:42:18 PM          100 Information
+12/14/2020 6:12:18 PM          100 Information
+12/14/2020 5:39:08 PM          100 Information
+12/14/2020 5:09:08 PM          100 Information
+```
+
+When using wevtutil.exe and XPath to query for the same event log and ID, this is our result:
+
+XPath Query using Wevtutil.exe
+
+```shell-session
+C:\Users\Administrator>wevtutil.exe qe Application /q:*/System[EventID=100] /f:text /c:1
+Event[0]:
+  Log Name: Application
+  Source: WLMS
+  Date: 2020-12-14T17:09:08.940
+  Event ID: 100
+  Task: None
+  Level: Information
+  Opcode: Info
+  Keyword: Classic
+  User: N/A
+  User Name: N/A
+  Computer: WIN-1O0UJBNP9G7
+  Description:
+N/A
+```
+
+**Note**: 2 additional parameters were used in the above command. This was done to retrieve just 1 event and for it not to contain any XML tags.
+
+If you want to query a different element, such as `Provider Name`, the syntax will be different. To filter on the provider, we need to use the `Name` attribute of `Provider`
+
+The XPath query is: 
+
+XPath Query for Provider
+
+```shell-session
+PS C:\Users\Administrator> Get-WinEvent -LogName Application -FilterXPath '*/System/Provider[@Name="WLMS"]'
+
+   ProviderName: WLMS
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+12/21/2020 4:23:47 AM          100 Information
+12/18/2020 3:18:57 PM          100 Information
+12/15/2020 8:50:22 AM          100 Information
+12/15/2020 8:48:34 AM          101 Information
+12/15/2020 8:18:34 AM          100 Information
+12/15/2020 7:48:34 AM          100 Information
+12/14/2020 7:12:18 PM          101 Information
+12/14/2020 6:42:18 PM          100 Information
+12/14/2020 6:12:18 PM          100 Information
+12/14/2020 6:09:09 PM          101 Information
+12/14/2020 5:39:08 PM          100 Information
+12/14/2020 5:09:08 PM          100 Information
+```
+
+What if you want to combine 2 queries? Is this possible? The answer is yes.
+
+Let's build this query based on the screenshot above. The Provider Name is **WLMS,** and based on the output, there are **2 Event IDs**.
+
+This time we only want to query for events with **Event ID 101**. 
+
+The XPath query would be `Get-WinEvent -LogName Application -FilterXPath '*/System/EventID=101 and */System/Provider[@Name="WLMS"]'`
+
+XPath Two Queries
+
+```shell-session
+PS C:\Users\Administrator> Get-WinEvent -LogName Application -FilterXPath '*/System/Provider[@Name="WLMS"]'
+
+   ProviderName: WLMS
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+12/15/2020 8:48:34 AM          101 Information
+12/14/2020 7:12:18 PM          101 Information
+12/14/2020 6:09:09 PM          101 Information
+```
+
+Lastly, let's discuss how to create XPath queries for elements within `EventData`. The query will be slightly different.
+
+**Note:** The EventData element doesn't always contain information.
+
+Below is the XML View of the event for which we will build our XPath query.
+
+![Windows Event Viewer Details tab showing Event 4624 logs in XML View, with EventData section highlighted.](https://assets.tryhackme.com/additional/win-event-logs/xpath-7b.png)  
+
+We will build the query for `TargetUserName`. In this case, that will be System. The XPath query would be `Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="System"'`
+
+XPath Query for TargetUserName
+
+```shell-session
+PS C:\Users\Administrator> Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="System"' -MaxEvents 1
+
+   ProviderName: Microsoft-Windows-Security-Auditing
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+12/21/2020 10:50:26 AM         4624 Information     An account was successfully logged on...
+```
+
+**Note**: The `-MaxEvents` parameter was used, and it was set to 1. This will return just 1 event. 
+
+At this point, you have enough knowledge to create XPath queries for **wevtutil.exe** or **Get-WinEvent**. To further this knowledge, I suggest reading the official Microsoft XPath Reference [docs.microsoft.com](https://docs.microsoft.com/en-us/previous-versions/dotnet/netframework-4.0/ms256115(v=vs.100)).
+
+_**Questions**_
+
+Using **Get-WinEvent** and **XPath**, what is the query to find WLMS events with a System Time of 2020-12-15T01:09:08.940277500Z?
+
+- `Get-WinEvent -LogName Application -FilterXPath '*/System/Provider[@Name="WLMS"] and */System/TimeCreated[@SystemTime="2020-12-15T01:09:08.940277500Z"]'`
+
+![](2023-03-09-08-53-52.png)
+![](2023-03-09-08-54-23.png)
+
+Using **Get-WinEvent** and **XPath**, what is the query to find a user named Sam with an Logon Event ID of 4720?
+
+- `Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="Sam" and */System/EventID=4720'`
+
+![](2023-03-09-08-58-20.png)
+![](2023-03-09-08-58-37.png)
+
+Based on the previous query, how many results are returned?
+
+- 2
+
+Based on the output from the question #2, what is Message?
+
+- A user account was created
+
+Still working with Sam as the user, what time was Event ID 4724 recorded? (**MM/DD/YYYY H:MM:SS \[AM/PM\]**)
+
+- `Get-WinEvent -LogName Security -FilterXPath '*/EventData/Data[@Name="TargetUserName"]="Sam" and */System/EventID=4724'`
+- 12/17/2020 1:57:14 PM
+
+![](2023-03-09-09-00-41.png)
+
+What is the Provider Name?
+
+- Microsoft-Windows-Security-Auditing
+
+
+## _**6: Event IDs**_
+
+When it comes to monitoring and hunting, you need to know what you are looking for. There are a large number of event IDs in use. This section is aimed at assisting you with this task. There are plenty of blogs, writeups, etc., on this topic. A few resources will be shared in this section. Please note this is not an exhaustive list.
+
+First on the list is [The Windows Logging Cheat Sheet (Windows 7 - Windows 2012)](https://static1.squarespace.com/static/552092d5e4b0661088167e5c/t/580595db9f745688bc7477f6/1476761074992/Windows+Logging+Cheat+Sheet_ver_Oct_2016.pdf). The last version update is October 2016, but it's still a good resource. The document covers a few things that need to be enabled and configured and what event IDs to look for based on different categories, such as Accounts, Processes, Log Clear, etc. 
+
+![Image showing a snippet of the Windows Logging Cheatsheet with WEvtUtil queries.](https://assets.tryhackme.com/additional/win-event-logs/event-ids-1.png)  
+
+Above is a snippet from the cheatsheet. Want to detect if a new service was installed? Look for **Event ID 7045** within the **System Log**.
+
+Next is [Spotting the Adversary with Windows Event Log Monitoring](https://apps.nsa.gov/iaarchive/library/reports/spotting-the-adversary-with-windows-event-log-monitoring.cfm). This NSA resource is also a bit outdated but good enough to build upon your foundation. The document covers some concepts touched on in this room and beyond. You must click on `Get File` to download the resource. 
+
+![Image showing a snippet of Windows Firewall log details with rules and Event IDs.](https://assets.tryhackme.com/additional/win-event-logs/event-ids-2.png)  
+
+Above is a snippet from the document. Maybe you want to monitor if a firewall rule was deleted from the host. That is **Event ID 2006/2033**. 
+
+Where else can we get a list of event IDs to monitor/hunt for? [MITRE ATT&CK](https://attack.mitre.org/)!
+
+If you are unfamiliar with **MITRE** or **MITRE ATT&CK**, I suggest you check out the [MITRE Room](https://tryhackme.com/room/mitre). 
+
+Let's look at ATT&CK ID [T1098](https://attack.mitre.org/techniques/T1098/) (Account Manipulation). Each ATT&CK ID will contain a section sharing tips to mitigate the technique and detection tips. 
+
+![Image showing a snippet of the detection details of the ATT&CK technique T1098.](https://assets.tryhackme.com/additional/win-event-logs/event-ids-3.png)  
+
+The last two resources are from **Microsoft**:
+
+- [Events to Monitor](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/plan/appendix-l--events-to-monitor) (Best Practices for Securing Active Directory)
+- [The Windows 10 and Windows Server 2016 Security Auditing and Monitoring Reference](https://www.microsoft.com/en-us/download/confirmation.aspx?id=52630) (a comprehensive list \[**over 700 pages**\])
+
+![Image showing a snippet of the Events to Monitor documentation from Microsoft, with the Event XML formats.](https://assets.tryhackme.com/additional/win-event-logs/event-ids-4.png)  
+
+**Note**: Some events will not be generated by default, and certain features will need to be enabled/configured on the endpoint, such as PowerShell logging. This feature can be enabled via **Group Policy** or the **Registry**.
+
+`Local Computer Policy > Computer Configuration > Administrative Templates > Windows Components > Windows PowerShell`
+
+![Image showing the enabling of PowerShell logging features.](https://assets.tryhackme.com/additional/win-event-logs/posh-logging-1b.png)  
+
+Some resources to provide more information about enabling this feature, along with its associated event IDs:
+
+- [About Logging Windows](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_logging_windows?view=powershell-7.1)
+- [Greater Visibility Through PowerShell Logging](https://www.fireeye.com/blog/threat-research/2016/02/greater_visibilityt.html)
+- [Configure PowerShell logging to see PowerShell anomalies in Splunk UBA](https://docs.splunk.com/Documentation/UBA/5.0.4/GetDataIn/AddPowerShell)
+
+![Image showing various PowerShell Event IDs.](https://assets.tryhackme.com/additional/win-event-logs/posh-logging-2.png)  
+
+Another feature to enable/configure is **Audit Process Creation**, which will generate **event ID 4688**. This will allow **command-line process auditing**. This setting is NOT enabled in the virtual machine but feel free to enable it and observe the events generated after executing some commands.
+
+`Local Computer Policy > Computer Configuration > Administrative Templates > System > Audit Process Creation`
+
+![Image showing the configuration of Audit Process Creation.](https://assets.tryhackme.com/additional/win-event-logs/enable-4688-a.png)  
+
+![Image showing the details of Event ID 4688 with the Process Command Line highlighted.](https://assets.tryhackme.com/additional/win-event-logs/enable-4688-2.png)  
+
+To read more about this feature, refer to [docs.microsoft.com](https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/component-updates/command-line-process-auditing#try-this-explore-command-line-process-auditing). The steps to test the configuration are at the bottom of the document. 
+
+![Image showing how to test the configuration using command line Process auditing.](https://assets.tryhackme.com/additional/win-event-logs/enable-4688.png)  
+
+To conclude this section, it will be reiterated that this is not an exhaustive list. There are countless blogs, writeups, threat intel reports, etc., on this topic.
+
+To effectively monitor and detect, you need to know what to look for (as mentioned earlier).
+
+
+## _**7: Putting theory into practice**_
+
