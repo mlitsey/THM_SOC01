@@ -632,3 +632,99 @@ To effectively monitor and detect, you need to know what to look for (as mention
 
 ## _**7: Putting theory into practice**_
 
+**Note**: To successfully answer the questions below, you may need to search online for more information. 
+
+The next scenarios/questions are based on the external event log file titled `merged.evtx` found on the Desktop. You can use any of the aforementioned tools to answer the questions below.
+
+Scenario 1 (Questions 1 & 2): The server admins have made numerous complaints to Management regarding PowerShell being blocked in the environment. Management finally approved the usage of PowerShell within the environment. Visibility is now needed to ensure there are no gaps in coverage. You researched this topic: what logs to look at, what event IDs to monitor, etc. You enabled PowerShell logging on a test machine and had a colleague execute various commands. 
+
+Scenario 2 (Questions 3 & 4): The Security Team is using Event Logs more. They want to ensure they can monitor if event logs are cleared. You assigned a colleague to execute this action.
+
+Scenario 3 (Questions 5, 6 & 7): The threat intel team shared its research on **Emotet**. They advised searching for event ID 4104 and the text "ScriptBlockText" within the EventData element. Find the encoded PowerShell payload. 
+
+Scenario 4 (Questions 8 & 9): A report came in that an intern was suspected of running unusual commands on her machine, such as enumerating members of the Administrators group. A senior analyst suggested searching for "`C:\Windows\System32\net1.exe`". Confirm the suspicion.   
+
+_**Questions**_
+
+What event ID is to detect a PowerShell downgrade attack?
+
+- 400
+
+![](2023-03-10-08-02-14.png)
+
+What is the **Date and Time** this attack took place? (**MM/DD/YYYY H:MM:SS \[AM/PM\]**)
+
+- `Get-WinEvent -Path "C:\Users\Administrator\Desktop\merged.evtx" -FilterXPath '*/System/EventID=400'`
+
+```
+Get-WinEvent -Path "C:\Users\Administrator\Desktop\merged.evtx" |
+Where-Object Id -eq 400 |
+Foreach-Object {
+     $version = [Version] ($_.Message -replace '(?s).*EngineVersion=([\d\.]+)*.*','$1')
+     if($version -lt ([Version] "5.0")) { $_ }
+}
+```
+
+![](2023-03-10-08-30-35.png)
+
+- 12/18/2020 7:50:33 AM
+
+A **Log clear** event was recorded. What is the 'Event Record ID'?
+
+- `Get-WinEvent -Path "C:\Users\Administrator\Desktop\merged.evtx" -FilterXPath '*/System/EventID=104' | Format-List -property *`
+- 27736
+
+![](2023-03-10-08-47-14.png)
+![](2023-03-10-08-48-21.png)
+![](2023-03-10-09-27-50.png)
+
+What is the name of the computer?  
+
+- PC01.example.corp
+
+What is the name of the first variable within the PowerShell command?
+
+- `Get-WinEvent -Path "C:\Users\Administrator\Desktop\merged.evtx" -FilterXPath '*/System/EventID=4104' -Oldest -MaxEvents 1 | Format-List`
+- $Va5w3n8
+
+![](2023-03-10-09-06-21.png)
+
+
+What is the **Date and Time** this attack took place? (**MM/DD/YYYY H:MM:SS \[AM/PM\]**)  
+
+- 8/25/2020 10:09:28 PM
+
+What is the **Execution Process ID**?
+
+- 6620
+
+![](2023-03-10-09-07-46.png)
+
+What is the **Group Security ID** of the group she enumerated?
+
+- `Get-WinEvent -Path "C:\Users\Administrator\Desktop\merged.evtx" -FilterXPath '*/System/EventID=4799 and */EventData/Data[@Name="CallerProcessName"]="C:\Windows\System32\net1.exe"' | Format-List -property *`
+- S-1-5-32-544
+
+![](2023-03-10-10-13-12.png)
+
+What is the event ID?
+
+- 4799
+
+![](2023-03-10-09-15-28.png)
+
+
+## _**Conclusion**_
+
+In this room, we covered Windows Event Logs, what they are, and how to query them using various tools and techniques. 
+
+We also briefly discussed various features within Windows that you need to enable/configure to log additional events to gain visibility into those processes/features that are turned off by default. 
+
+The information covered in this room will serve as a primer for other rooms covering [Windows Internals](https://tryhackme.com/jr/windowsinternals), [Sysmon](https://tryhackme.com/jr/sysmon), and various [SIEM](https://tryhackme.com/jr/splunk101) tools.
+
+I'll end this room by providing additional reading material:
+
+- [EVTX Attack Samples](https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES) (a few were used in this room)
+- [PowerShell <3 the Blue Team](https://devblogs.microsoft.com/powershell/powershell-the-blue-team/)
+- [Tampering with Windows Event Tracing: Background, Offense, and Defense](https://medium.com/palantir/tampering-with-windows-event-tracing-background-offense-and-defense-4be7ac62ac63)
+
