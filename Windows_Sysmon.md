@@ -665,75 +665,93 @@ What is the device name when being called by RawAccessRead in Investigation 1?
 
 What is the first exe the process executes in Investigation 1?
 
-- 
+- rundll32.exe
 
 ![](2023-03-21-08-53-03.png)
 
 What is the full path of the payload in Investigation 2?
 
-- 
+- C:\Users\IEUser\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5\S97WTYG7\update.hta
+
+![](2023-03-23-05-50-59.png)
 
 What is the full path of the file the payload masked itself as in Investigation 2?
 
-- 
+- C:\Users\IEUser\Downloads\update.html
 
 What signed binary executed the payload in Investigation 2?
 
-- 
+- C:\Windows\System32\mshta.exe
 
 What is the IP of the adversary in Investigation 2?
 
-- 
+- 10.0.2.18
+
+![](2023-03-23-05-53-40.png)
 
 What back connect port is used in Investigation 2?
 
-- 
+- 4443
 
 What is the IP of the suspected adversary in Investigation 3.1?
 
-- 
+- 172.30.1.253
+
+![](2023-03-23-05-56-13.png)
 
 What is the hostname of the affected endpoint in Investigation 3.1?
 
-- 
+- DESKTOP-O153T4R
 
 What is the hostname of the C2 server connecting to the endpoint in Investigation 3.1?
 
-- 
+- empirec2
 
 Where in the registry was the payload stored in Investigation 3.1?
 
-- 
+- HKLM\SOFTWARE\Microsoft\Network\debug
+
+![](2023-03-23-06-09-54.png)
 
 What PowerShell launch code was used to launch the payload in Investigation 3.1?
 
-- 
+- C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -c "$x=$((gp HKLM:Software\Microsoft\Network debug).debug);start -Win Hidden -A \"-enc $x\" powershell";exit;
+
+![](2023-03-23-06-12-19.png)
 
 What is the IP of the adversary in Investigation 3.2?
 
-- 
+- 172.168.103.188
+
+![](2023-03-23-06-14-06.png)
 
 What is the full path of the payload location in Investigation 3.2?
 
-- 
+- c:\users\q\AppData:blah.txt
+
+![](2023-03-23-06-16-41.png)
 
 What was the full command used to create the scheduled task in Investigation 3.2?
 
-- 
+- C:\WINDOWS\system32\schtasks.exe /Create /F /SC DAILY /ST 09:00 /TN Updater /TR "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NonI -W hidden -c \"IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String($(cmd /c ''more < c:\users\q\AppData:blah.txt'''))))\""
 
 What process was accessed by schtasks.exe that would be considered suspicious behavior in Investigation 3.2?
 
-- 
+- lsass.exe
+
+![](2023-03-23-06-24-31.png)
 
 What is the IP of the adversary in Investigation 4?
 
-- 
+- 172.30.1.253
+
+![](2023-03-23-06-26-20.png)
 
 What port is the adversary operating on in Investigation 4?
 
-- 
+- 80
 
 What C2 is the adversary utilizing in Investigation 4?
 
-- 
+- empire
 
