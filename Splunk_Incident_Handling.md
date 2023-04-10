@@ -211,3 +211,241 @@ What is the IP address of the server imreallynotbatman.com?
 
 ## _**5: Exploitation Phase**_
 
+The attacker needs to exploit the vulnerability to gain access to the system/server.
+
+In this task, we will look at the potential exploitation attempt from the attacker against our web server and see if the attacker got successful in exploiting or not.  
+
+To begin our investigation, let's note the information we have so far:
+
+- We found two IP addresses from the reconnaissance phase with sending requests to our server.
+- One of the IPs `40.80.148.42` was seen attempting to scan the server with IP **192.168.250.70**.
+- The attacker was using the web scanner Acunetix for the scanning attempt.
+
+**Count**
+
+Let's use the following search query to see the number of counts by each source IP against the webserver.  
+
+**Search Query**:`index=botsv1 imreallynotbatman.com sourcetype=stream* | stats count(src_ip) as Requests by src_ip | sort - Requests`
+
+**Query Explanation:** This query uses the stats function to display the count of the IP addresses in the field src\_ip.  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/7ba883b04d37c2eca99362c9bda29454.png)  
+
+Additionally, we can also create different visualization to show the result. Click on **Visualization → Select Visualization** as shown below.  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/caed557285bfc17702c039120aac1b4f.png)  
+
+Now we will narrow down the result to show requests sent to our web server, which has the IP `192.168.250.70`  
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70"`  
+
+**Query Explanation:** This query will look for all the inbound traffic towards IP **192.168.250.70.**
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/d570547792358eed228ca92e06c27af9.png)  
+
+The result in the **src\_ip** field shows three IP addresses (1 local IP and two remote IPs) that originated the HTTP traffic towards our webserver.  
+
+Another interesting field, **http\_method** will give us information about the HTTP Methods observed during these HTTP communications.  
+
+We observed most of the requests coming to our server through the POST request, as shown below.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/45495b910d4f5ad7ca9215a15166835f.png)  
+
+To see what kind of traffic is coming through the POST requests, we will narrow down on the field `http_method=POST` as shown below:
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" http_method=POST  
+`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/e9e7ec45af9290353dffb5809e33ac53.png)  
+
+ The result in the **src\_ip** field shows two IP addresses sending all the POST requests to our server.
+
+**Interesting fields:** In the left panel, we can find some interesting fields containing valuable information. Some of the fields are:  
+
+- src\_ip
+- form\_data
+- http\_user\_agent
+- uri
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/17ef54b0e1fdf69923e5c30f5650aad1.gif)  
+
+The term Joomla is associated with the webserver found in a couple of fields like **uri, uri\_path, http\_referrer**, etc. This means our webserver is using Joomla CMS (Content Management Service) in the backend.
+
+A little search on the internet for the admin login page of the Joomla CMS will show as -> `/joomla/administrator/index.php`
+
+It is important because this uri contains the login page to access the web portal therefore we will be examining the traffic coming into this admin panel for a potential brute-force attack.  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/ea62d4ec767a649904b5f5bba9ba1d62.png)  
+
+Reference: [https://www.joomla.org/administrator/index.php](https://www.joomla.org/administrator/index.php)
+
+We can narrow down our search to see the requests sent to the login portal using this information.
+
+**Search query:** `index=botsv1 imreallynotbatman.com sourcetype=stream:http dest_ip="192.168.250.70"  uri="/joomla/administrator/index.php"  
+`  
+
+**Query Explanation:** We are going to add `uri="/joomla/administrator/index.php"` in the search query to show the traffic coming into this URI.  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/83b8b3e58e245701708a7e7ccac8c748.png)
+
+  
+
+`form_data` The field contains the requests sent through the form on the admin panel page, which has a login page. We suspect the attacker may have tried multiple credentials in an attempt to gain access to the admin panel. To confirm, we will dig deep into the values contained within the form\_data field, as shown below:
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" http_method=POST uri="/joomla/administrator/index.php" | table _time uri src_ip dest_ip form_data`
+
+**Query Explanation:** We will add this -> `| table _time uri src dest_ip form_data` to create a table containing important fields as shown below:   
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/1738f09ad30036c48e6849f7f8123e3e.png)  
+
+If we keep looking at the results, we will find two interesting fields `username` that includes the single username `admin` in all the events and another field `passwd` that contains multiple passwords in it, which shows the attacker from the IP `23.22.63.114` Was trying to guess the password by brute-forcing and attempting numerous passwords.
+
+The time elapsed between multiple events also suggests that the attacker was using an automated tool as various attempts were observed in a short time.
+
+**Extracting Username and Passwd Fields using Regex**
+
+Looking into the logs, we see that these fields are not parsed properly. Let us use **Regex** in the search to extract only these two fields and their values from the logs and display them.
+
+We can display only the logs that contain the **username** and **passwd** values in the form\_data field by adding `form_data=*username*passwd*` in the above search.  
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" http_method=POST uri="/joomla/administrator/index.php" form_data=*username*passwd* | table _time uri src_ip dest_ip form_data`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/9c47791d96dbadf8ab0d6a0adf1a9508.png)  
+
+It's time to use Regex **(regular expressions)** to extract all the password values found against the field passwd in the logs. To do so, Splunk has a function called rex. If we type it in the search head, it will show detail and an example of how to use it to extract the values.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/5ff9ecd4bf13a65356c0f6b9431d90c5.png)  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+Now, let's use Regex.  **`rex field=form_data "passwd=(?<creds>\w+)"`** To extract the **passwd** values only. This will pick the **form\_data** field and extract all the values found with the field. **`creds`**.  
+
+**Search Query:**`index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" http_method=POST form_data=*username*passwd* | rex field=form_data "passwd=(?<creds>\w+)"  | table src_ip creds`  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/594dedebeb2d2d5a7cc6cae8d1ebc226.gif)  
+
+We have extracted the passwords being used against the username admin on the admin panel of the webserver. If we examine the fields in the logs, we will find two values against the field `http_user_agent` as shown below:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/c8f99804c3e8a60170be32c01cdc0857.png)  
+
+The first value clearly shows attacker used a python script to automate the brute force attack against our server. But one request came from a Mozilla browser. WHY? To find the answer to this query, let's slightly change to the about search query and add `http_user_agent` a field in the search head.
+
+Let's create a table to display key fields and values by appending -> `| table _time src_ip uri http_user_agent creds` in the search query as shown below.  
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" http_method=POST form_data=*username*passwd* | rex field=form_data "passwd=(?<creds>\w+)" |table _time src_ip uri http_user_agent creds`  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/ef2cbed333760fbe7d2fa7c507d2c625.png)  
+
+This result clearly shows a continuous brute-force attack attempt from an IP **23.22.63.114** and 1 password attempt **batman** from IP **40.80.148.42** using the Mozilla browser.
+
+**Questions**
+
+What IP address is likely attempting a brute force password attack against imreallynotbatman.com?
+
+- 23.22.63.114
+
+What was the URI which got multiple brute force attempts?
+
+- /joomla/administrator/index.php
+
+Against which username was the brute force attempt made?
+
+- admin
+
+What was the correct password for admin access to the content management system running imreallynotbatman.com?
+
+- batman
+
+How many unique passwords were attempted in the brute force attempt?
+
+- 412
+
+After finding the correct password, which IP did the attacker use to log in to the admin panel?
+
+- 40.80.148.42
+
+
+## _**6: Installation Phase**_
+
+Once the attacker has successfully exploited the security of a system, he will try to install a backdoor or an application for persistence or to gain more control of the system. This activity comes under the installation phase.
+
+In the previous Exploitation phase, we found evidence of the webserver `iamreallynotbatman.com` getting compromised via brute-force attack by the attacker using the python script to automate getting the correct password. The attacker used the IP" for the attack and the IP to log in to the server. This phase will investigate any payload / malicious program uploaded to the server from any attacker's IPs and installed into the compromised server.
+
+To begin an investigation, we first would narrow down any http traffic coming into our server **192.168.250.70** containing the term ".exe." This query may not lead to the findings, but it's good to start from 1 extension and move ahead.
+
+**Search Query**: `index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" *.exe`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/4097da92bb83bd61cdacec4539c58d67.gif)  
+
+With the search query in place, we are looking for the fields that could have some values of our interest. As we could not find the file name field, we looked at the missing fields and saw a field. `part_filename{}`.
+
+Observing the interesting fields and values, we can see the field `part_filename{}` contains the two file names. an executable file `3791.exe` and a PHP file `agent.php`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/f2206e28fac1af4e5033d1eb7cd7f29d.png)  
+
+Next, we need to find if any of these files came from the IP addresses that were found to be associated with the attack earlier.
+
+Click on the file name; it will be added to the search query, then look for the field c\_ip, which seems to represent the client IP.
+
+**Search Query:**`index=botsv1 sourcetype=stream:http dest_ip="192.168.250.70" "part_filename{}"="3791.exe"`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/e8f2b1f9924e74acaf2224cd7c13f6f6.png)  
+
+**Was this file executed on the server after being uploaded?**
+
+We have found that file **3791.exe** was uploaded on the server. The question that may come to our mind would be, was this file executed on the server? We need to narrow down our search query to show the logs from the host-centric log sources to answer this question.
+
+**Search Query:** `index=botsv1 "3791.exe"`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/2dd77a76ba3366bf822576b7600d4669.png)  
+
+Following the Host-centric log, sources were found to have traces of the executable 3791. exe.
+
+- Sysmon
+- WinEventlog
+- fortigate\_utm
+
+For the evidence of execution, we can leverage sysmon and look at the EventCode=1 for program execution.
+
+Reference: [https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon)
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/0135d57671ea197866054124115cfb4c.png)  
+
+**Search Query:** `index=botsv1 "3791.exe" sourcetype="XmlWinEventLog" EventCode=1`
+
+**Query Explanation:** This query will look for the process Creation logs containing the term **"3791.exe"** in the logs.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/140a87acbf87ae7b9cf62f41dd93acdb.png)  
+
+Looking at the output, we can clearly say that this file was executed on the compromised server. We can also look at other host-centric log sources to confirm the result.
+
+**Questions**
+
+Sysmon also collects the Hash value of the processes being created. What is the MD5 HASH of the program 3791.exe?
+
+- 
+
+Looking at the logs, which user executed the program 3791.exe on the server?
+
+- 
+
+Search hash on the virustotal. What other name is associated with this file 3791.exe?
+
+- 
+
+
+## 7: 
