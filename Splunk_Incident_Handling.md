@@ -437,15 +437,317 @@ Looking at the output, we can clearly say that this file was executed on the com
 
 Sysmon also collects the Hash value of the processes being created. What is the MD5 HASH of the program 3791.exe?
 
-- 
+- `index=botsv1 "3791.exe" source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 CommandLine="3791.exe"`
+- AAE3F5A29935E6ABCC2C2754D12A9AF0
 
 Looking at the logs, which user executed the program 3791.exe on the server?
 
-- 
+- NT AUTHORITY\IUSR
 
 Search hash on the virustotal. What other name is associated with this file 3791.exe?
 
-- 
+- ab.exe
+- [VirusTotal](https://www.virustotal.com/gui/file/ec78c938d8453739ca2a370b9c275971ec46caf6e479de2b2d04e97cc47fa45d/details)
 
 
-## 7: 
+## _**7: Action on Objectives**_
+
+As the website was defaced due to a successful attack by the adversary, it would be helpful to understand better what ended up on the website that caused defacement.
+
+As an analyst, our first quest could be to figure out the traffic flow that could lead us to the answer to this question. There can be a different approach to finding the answer to this question. We will start our investigation by examining the **Suricata** log source and the IP addresses communicating with the webserver 192.168.250.70.
+
+**Search Query**:`index=botsv1 dest=192.168.250.70 sourcetype=suricata`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/47741c5563b7aebe667ec7eafdeaf1b3.png)  
+
+The logs do not show any external IP communicating with the server. Let us change the flow direction to see if any communication originates from the server.
+
+**Search Query:** `index=botsv1 src=192.168.250.70 sourcetype=suricata`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/9cdce04d736980734ede35d17bc9d9a7.png)  
+
+What is interesting about the output? Usually, the web servers do not originate the traffic. The browser or the client would be the source, and the server would be the destination. Here we see three external IPs towards which our web server initiates the outbound traffic. There is a large chunk of traffic going to these external IP addresses, which could be worth checking.
+
+Pivot into the destination IPs one by one to see what kind of traffic/communication is being carried out.
+
+**Search Query:** `index=botsv1 src=192.168.250.70 sourcetype=suricata dest_ip=23.22.63.114`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/d012293c246dcc717ab0c80a7190845b.png)  
+
+The URL field shows 2 PHP files and one jpeg file. This jpeg file looks interesting. Let us change the search query and see where this jpeg file came from.
+
+**Search Query:** `index=botsv1 url="/poisonivy-is-coming-for-you-batman.jpeg" dest_ip="192.168.250.70" | table _time src dest_ip http.hostname url`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/da31347a03f68b6e9998e66db946dccb.gif)
+
+  
+
+The end result clearly shows a suspicious jpeg `poisonivy-is-coming-for-you-batman.jpeg` was downloaded from the attacker's host `prankglassinebracket.jumpingcrab.com` that defaced the site.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/b71e2d7ed8b035a368d34ce02441a105.png)  
+
+**Questions**
+
+What is the name of the file that defaced the imreallynotbatman.com website ?
+
+- poisonivy-is-coming-for-you-batman.jpeg
+- `index=botsv1 src=192.168.250.70 sourcetype=suricata dest_ip=23.22.63.114 url="/poisonivy-is-coming-for-you-batman.jpeg"`
+
+Fortigate Firewall 'fortigate_utm' detected SQL attempt from the attacker's IP 40.80.148.42. What is the name of the rule that was triggered during the SQL Injection attempt?
+
+- HTTP.URI.SQL.Injection
+- `index=botsv1 src=40.80.148.42 sourcetype="fortigate_utm" sql`
+
+
+## _**8: Command and Control Phase**_
+
+The attacker uploaded the file to the server before defacing it. While doing so, the attacker used a Dynamic DNS to resolve a malicious IP. Our objective would be to find the IP that the attacker decided the DNS.
+
+To investigate the communication to and from the adversary's IP addresses, we will be examining the network-centric log sources mentioned above. We will first pick fortigate\_utm to review the firewall logs and then move on to the other log sources.
+
+**Search Query:** `index=botsv1 sourcetype=fortigate_utm"poisonivy-is-coming-for-you-batman.jpeg"  
+`  
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/a2df650b7d76e7cc7a795b8d0b627bfe.png)  
+
+Looking into the Fortinet firewall logs, we can see the src IP, destination IP, and URL. Look at the fields on the left panel and the field `url` contains the FQDN (Fully Qualified Domain Name).
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/e5cda837fe7a7cbfa791515b49756f69.png)  
+
+Though we have found the answer, we can verify other log sources.  
+
+Let us verify the answer by looking at another log source.`stream:http`.
+
+**Search Query:** `index=botsv1 sourcetype=stream:http dest_ip=23.22.63.114 "poisonivy-is-coming-for-you-batman.jpeg" src_ip=192.168.250.70`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/495918ac13b99ae950a0ac470fa349fc.png)  
+
+We have identified the suspicious domain as a Command and Control Server, which the attacker contacted after gaining control of the server.  
+
+**Note:** We can also confirm the domain by looking at the last log source `stream:dns` to see what DNS queries were sent from the webserver during the infection period.
+
+**Questions**
+
+This attack used dynamic DNS to resolve to the malicious IP. What fully qualified domain name (FQDN) is associated with this attack?
+
+- `index=botsv1 sourcetype=fortigate_utm"poisonivy-is-coming-for-you-batman.jpeg"`
+- prankglassinebracket.jumpingcrab.com
+
+
+## _**9: Weaponization Phase**_
+
+**Weaponization**![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/1bb220f3245456f2cac6c3ae17627c4e.png)
+
+In the weaponization phase, the adversaries would:
+
+- Create Malware / Malicious document to gain initial access / evade detection etc.
+- Establish domains similar to the target domain to trick users.
+- Create a Command and Control Server for the post-exploitation communication/activity etc.
+
+We have found some domains / IP addresses associated with the attacker during the investigations. This task will mainly look into OSINT sites to see what more information we can get about the adversary.  
+
+  
+
+So far, we have found a domain `prankglassinebracket.jumpingcrab.com` associated with this attack. Our first task would be to find the IP address tied to the domains that may potentially be pre-staged to attack Wayne Enterprise.
+
+In the following exercise, we will be searching the online Threat Intel sites for any information like IP addresses/domains / Email addresses associated with this domain which could help us know more about this adversary.  
+
+**Robtex:**  
+[Robtex](https://www.robtex.com/) is a Threat Intel site that provides information about IP addresses, domain names, etc.  
+
+Please search for the domain on the robtex site and see what we get. We will get the IP addresses associated with this domain.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/7ad2296f02b00a73a3ae2e4182fa7cfc.png)  
+
+Some domains/subdomains associated with this domain:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/c6aa355d30ed9425cd6e923526a03d46.png)  
+
+Reference**:** [https://www.robtex.com/dns-lookup/prankglassinebracket.jumpingcrab.com](https://www.robtex.com/dns-lookup/prankglassinebracket.jumpingcrab.com)
+
+Next, search for the IP address `23.22.63.114`   on this Threat Intel site.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/2a9dd066e2b6ef2cd55a5e0c04983776.png)  
+
+What did we find? this IP is associated with some domains that look pretty similar to **the WAYNE Enterprise** site.  
+
+Reference: [https://www.robtex.com/ip-lookup/23.22.63.114](https://www.robtex.com/ip-lookup/23.22.63.114)
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/87794e9d70b8b0dac729232443427181.png)  
+
+**ThreatCrowd**:
+
+[ThreatCrowd](https://www.threatcrowd.org/) is a Search Engine for Threats that provides intel based on the IP, domain, email address, etc.  
+
+We will use ThreatCrowd to find the relationship between IP addresses and domains. Let's look at the threatcrowd site to see if we can find some information regarding this IP.
+
+Reference**:** [https://threatcrowd.org/ip.php?ip=23.22.63.114](https://threatcrowd.org/ip.php?ip=23.22.63.114)
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/c6298e96459c32e77675fa64aa09b5e3.png)  
+
+See, we found multiple IPs domains associated with this particular IP, along with the email address `lillian.rose@po1s0nvy.com` that could potentially be associated with the adversary.
+
+**Virustotal**
+
+[Virustotal](https://www.virustotal.com/) is an OSINT site used to analyze suspicious files, domains, IP, etc. Let's now search for the IP address on the virustotal site. If we go to the **RELATIONS** tab, we can see all the domains associated with this IP which look similar to the Wayn Enterprise company.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/b217030ec313023a8d811ad513a28378.png)  
+
+In the domain list, we saw the domain that is associated with the attacker `www.po1s0n1vy.com` . Let us search for this domain on the virustotal.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/0d1024a79200a34705ac77b986782104.png)  
+
+We can also look for the whois information on this site -> [whois.domaintools.com](https://whois.domaintools.com/) to see if we can find something valuable.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/a306319398fa56470363ca0f41cd814f.png)
+
+**Questions**
+
+What IP address has P01s0n1vy tied to domains that are pre-staged to attack Wayne Enterprises?
+
+- 23.22.63.114
+
+Based on the data gathered from this attack and common open-source intelligence sources for domain names, what is the email address that is most likely associated with the P01s0n1vy APT group?
+
+- lillian.rose@po1s0nvy.com
+
+
+## _**10: Delivery Phase**_
+
+**Delivery**![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/6d050121b629cb9a57d15a8d809e0c02.png)  
+
+Attackers create malware and infect devices to gain initial access or evade defenses and find ways to deliver it through different means. We have identified various IP addresses, domains and Email addresses associated with this adversary. Our task for this lesson would be to use the information we have about the adversary and use various Threat Hunting platforms and OSINT sites to find any malware linked with the adversary.  
+
+Threat Intel report suggested that this adversary group Poison lvy appears to have a secondary attack vector in case the `initial compromise` fails. Our objective would be to understand more about the attacker and their methodology and correlate the information found in the logs with various threat Intel sources.
+
+**OSINT sites**
+
+- Virustotal
+- ThreatMiner
+- Hybrid-Analysis
+
+**ThreatMiner**
+
+Let's start our investigation by looking for the IP `23.22.63.114` on the Threat Intel site [ThreatMiner.](https://www.threatminer.org/host.php?q=23.22.63.114#gsc.tab=0&gsc.q=23.22.63.114&gsc.page=1)
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/994b52e66e64ffba61ca57d32ace6a54.png)  
+
+We found three files associated with this IP, from which one file with the hash value  `c99131e0169171935c5ac32615ed6261` seems to be malicious and something of interest.
+
+Now, click on this MD5 hash value to see the metadata and other important information about this particular file.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/511a309aacc571f2176931686df681e0.png)  
+
+Reference: [https://www.threatminer.org/host.php?q=23.22.63.114#gsc.tab=0&gsc.q=23.22.63.114&gsc.page=1](https://www.threatminer.org/host.php?q=23.22.63.114#gsc.tab=0&gsc.q=23.22.63.114&gsc.page=1)[](https://www.threatminer.org/host.php?q=23.22.63.114#gsc.tab=0&gsc.q=23.22.63.114&gsc.page=1)
+
+**Virustotal**
+
+Open [virustotal.com](http://virustotal.com/) and search for the hash on the virustotal now. Here, we can get information about the metadata about this Malware in the Details tab.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/c380913c90e52016683cbcfe9174b35e.png)
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/8edbbf929731d7718587d3c1adc66648.png)  
+
+Reference: [https://www.virustotal.com/gui/file/9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8/community](https://www.virustotal.com/gui/file/9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8/community)
+
+**Hybrid-Analysis**
+
+Hybrid Analysis is a beneficial site that shows the behavior Analysis of any malware. Here you can look at all the activities performed by this Malware after being executed. Some of the information that Hybrid-Analysis provides are:
+
+- Network Communication.
+- DNS Requests
+- Contacted Hosts with Country Mapping
+- Strings
+- MITRE ATT&CK Mapping
+- Malicious Indicators.
+- DLLs Imports / Exports
+- Mutex Information if created
+- File Metadata
+- Screenshots
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/6ef05247bb5c92e91d0a2894f219758a.png)  
+
+Scroll down, and you will get a lot of information about this Malware.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5e8dd9a4a45e18443162feab/room-content/7a714d6ca3a44c0c570c45cb2711b660.png)  
+
+Reference**:** [https://www.hybrid-analysis.com/sample/9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8?environmentId=100](https://www.hybrid-analysis.com/sample/9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8?environmentId=100)[](https://www.hybrid-analysis.com/sample/9709473ab351387aab9e816eff3910b9f28a7a70202e250ed46dba8f820f34a8?environmentId=100)
+
+**Questions**
+
+What is the HASH of the Malware associated with the APT group?
+
+- c99131e0169171935c5ac32615ed6261
+
+What is the name of the Malware associated with the Poison Ivy Infrastructure?
+
+- MirandaTateScreensaver.scr.exe
+
+
+## 11: Conclusion
+
+**Conclusion:**
+
+In this fun exercise, as a SOC Analyst, we have investigated a cyber-attack where the attacker had defaced a website 'imreallynotbatman.com' of the Wayne Enterprise. We mapped the attacker's activities into the 7 phases of the Cyber Kill Chain. Let us recap everything we have found so far:
+
+**Reconnaissance Phase:**
+
+We first looked at any reconnaissance activity from the attacker to identify the IP address and other details about the adversary.
+
+**Findings:**
+
+- IP Address `40.80.148.42` was found to be scanning our webserver.
+- The attacker was using Acunetix as a web scanner.
+
+**Exploitation Phase:**
+
+We then looked into the traces of exploitation attempts and found brute-force attacks against our server, which were successful.
+
+**Findings:**
+
+- Brute force attack originated from IP `23.22.63.114.`
+- The IP address used to gain access: `40.80.148.42`
+- 142 unique brute force attempts were made against the server, out of which one attempt was successful
+
+**Installation Phase:**
+
+Next, we looked at the installation phase to see any executable from the attacker's IP Address uploaded to our server.
+
+**Findings:**
+
+- A malicious executable file `3791.exe` was observed to be uploaded by the attacker.
+- We looked at the sysmon logs and found the MD5 hash of the file.
+
+**Action on Objective:**
+
+After compromising the web server, the attacker defaced the website.
+
+**Findings:**
+
+- We examined the logs and found the file name used to deface the webserver.
+
+**Weaponization Phase:**
+
+We used various threat Intel platforms to find the attacker's infrastructure based on the following information we saw in the above activities.
+
+Information we had:
+
+Domain: `prankglassinebracket.jumpingcrab.com`
+
+IP Address: `23.22.63.114`
+
+**Findings:**
+
+- Multiple masquerading domains were found associated with the attacker's IPs.
+- An email of the user `Lillian.rose@po1s0n1vy.com` was also found associated with the attacker's IP address.
+
+**Deliver Phase:**
+
+In this phase, we again leveraged online Threat Intel sites to find malware associated with the adversary's IP address, which appeared to be a secondary attack vector if the initial compromise failed.
+
+**Findings:**
+
+- A malware name `MirandaTateScreensaver.scr.exe` was found associated with the adversary.
+- MD5 of the malware was `c99131e0169171935c5ac32615ed6261`
+
+
