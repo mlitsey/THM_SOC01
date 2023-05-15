@@ -452,3 +452,227 @@ When was this file opened?
 
 # _**8: Evidence of Execution**_
 
+**UserAssist**:
+
+Windows keeps track of applications launched by the user using Windows Explorer for statistical purposes in the User Assist registry keys. These keys contain information about the programs launched, the time of their launch, and the number of times they were executed. However, programs that were run using the command line can't be found in the User Assist keys. The User Assist key is present in the NTUSER hive, mapped to each user's GUID. We can find it at the following location:
+
+`NTUSER.DAT\Software\Microsoft\Windows\Currentversion\Explorer\UserAssist\{GUID}\Count`
+
+Take a look at the below screenshot from Registry Explorer and answer Question #1.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/9bd8461865865ac3ff774c8a88d1afd5.png)  
+
+**ShimCache:**  
+
+ShimCache is a mechanism used to keep track of application compatibility with the OS and tracks all applications launched on the machine. Its main purpose in Windows is to ensure backward compatibility of applications. It is also called Application Compatibility Cache (AppCompatCache). It is located in the following location in the SYSTEM hive:
+
+`SYSTEM\CurrentControlSet\Control\Session Manager\AppCompatCache`  
+
+ShimCache stores file name, file size, and last modified time of the executables.
+
+Our goto tool, the Registry Explorer, doesn't parse ShimCache data in a human-readable format, so we go to another tool called AppCompatCache Parser, also a part of Eric Zimmerman's tools. It takes the SYSTEM hive as input, parses the data, and outputs a CSV file that looks like this:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/aad7dc918dbf3b1ab207dd71d03e8c0c.png)
+
+We can use the following command to run the AppCompatCache Parser Utility:
+
+`AppCompatCacheParser.exe --csv <path to save output> -f <path to SYSTEM hive for data parsing> -c <control set to parse>`  
+
+The output can be viewed using EZviewer, another one of Eric Zimmerman's tools.
+
+**AmCache:**
+
+The AmCache hive is an artifact related to ShimCache. This performs a similar function to ShimCache, and stores additional data related to program executions. This data includes execution path, installation, execution and deletion times, and SHA1 hashes of the executed programs. This hive is located in the file system at:
+
+`C:\Windows\appcompat\Programs\Amcache.hve`  
+
+Information about the last executed programs can be found at the following location in the hive:
+
+`Amcache.hve\Root\File\{Volume GUID}\`
+
+This is how Registry Explorer parses the AmCache hive:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/a569dfdf155c1a26fe3a693c388a44c7.png)
+
+**BAM/DAM:**
+
+Background Activity Monitor or BAM keeps a tab on the activity of background applications. Similar Desktop Activity Moderator or DAM is a part of Microsoft Windows that optimizes the power consumption of the device. Both of these are a part of the Modern Standby system in Microsoft Windows.
+
+In the Windows registry, the following locations contain information related to BAM and DAM. This location contains information about last run programs, their full paths, and last execution time.
+
+`SYSTEM\CurrentControlSet\Services\bam\UserSettings\{SID}`
+
+`SYSTEM\CurrentControlSet\Services\dam\UserSettings\{SID}`
+
+Below you can see how Registry Explorer parses data from BAM:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/8a672c6580ab63d757ee5c08c09c924a.png)
+
+**Questions**
+
+How many times was the File Explorer launched?
+
+- 26
+
+What is another name for ShimCache?
+
+- AppCompatCache
+
+Which of the artifacts also saves SHA1 hashes of the executed programs?
+
+- AmCache
+
+Which of the artifacts saves the full path of the executed programs?
+
+- BAM/DAM
+
+
+# _**9: External Devices/USB device forensics**_
+
+When performing forensics on a machine, often the need arises to identify if any USB or removable drives were attached to the machine. If so, any information related to those devices is important for a forensic investigator. In this task, we will go through the different ways to find information on connected devices and the drives on a system using the registry.
+
+Device identification:
+
+The following locations keep track of USB keys plugged into a system. These locations store the vendor id, product id, and version of the USB device plugged in and can be used to identify unique devices. These locations also store the time the devices were plugged into the system.
+
+`SYSTEM\CurrentControlSet\Enum\USBSTOR`
+
+`SYSTEM\CurrentControlSet\Enum\USB`
+
+Registry Explorer shows this information in a nice and easy-to-understand way. Take a look at this and answer Questions # 1 and 2.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/03c87eaaf8458db97ffbddd30a6463e8.png)  
+
+First/Last Times:
+
+Similarly, the following registry key tracks the first time the device was connected, the last time it was connected and the last time the device was removed from the system.
+
+`SYSTEM\CurrentControlSet\Enum\USBSTOR\Ven_Prod_Version\USBSerial#\Properties\{83da6326-97a6-4088-9453-a19231573b29}\####`
+
+In this key, the #### sign can be replaced by the following digits to get the required information:
+
+<table class="table table-bordered"><tbody><tr><td><b>Value</b></td><td><b>Information</b></td></tr><tr><td>0064</td><td>First Connection time</td></tr><tr><td>0066</td><td>Last Connection time</td></tr><tr><td>0067</td><td>Last removal time</td></tr></tbody></table>
+
+Although we can check this value manually, as we have seen above, Registry Explorer already parses this data and shows us if we select the USBSTOR key.
+
+**USB device Volume Name:**
+
+The device name of the connected drive can be found at the following location:
+
+`SOFTWARE\Microsoft\Windows Portable Devices\Devices`
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/6c9f71cdf4c71afdc19fc8c254a6a3cc.png)We can compare the GUID we see here in this registry key and compare it with the Disk ID we see on keys mentioned in device identification to correlate the names with unique devices. Take a look at these two screenshots and answer Question # 3.
+
+Combining all of this information, we can create a fair picture of any USB devices that were connected to the machine we're investigating. 
+
+**Questions**
+
+What is the serial number of the device from the manufacturer 'Kingston'?
+
+- 1C6F654E59A3B0C179D366AE&0
+
+What is the name of this device?
+
+- Kingston DataTraveler 2.0 USB Device
+
+What is the friendly name of the device from the manufacturer 'Kingston'?
+
+- USB
+
+
+# _**10: Hands-on Challenge**_
+
+So, now that we have learned something, let's put it into practice. 
+
+Launch the VM attached with the task. A Windows VM should show up in the right half of your browser window. Please allow a few minutes for the machine to boot. If you don’t see a Desktop, click the Show Split Screen button at the top right of the page.
+
+**The Setup:**
+
+If preferred, use the following credentials to log into the machine:
+
+**Username:** THM-4n6
+
+**Password:** 123
+
+Once we log in, we will see two folders on the Desktop named `triage` and `EZtools`. The `triage` folder contains a triage collection collected through KAPE, which has the same directory structure as the parent. This is where our artifacts will be located. The `EZtools` folder contains Eric Zimmerman's tools, which we will be using to perform our analysis. You will also find RegistryExplorer, EZViewer, and AppCompatCacheParser.exe in the same folder.
+
+**The Challenge:**
+
+ Now that we know where the required toolset is, we can start our investigation. We will have to use our knowledge to identify where the different files for the relevant registry hives are located and load them into the tools of our choice. Let's answer the questions below using our knowledge of registry forensics.
+
+**Scenario:**
+
+One of the Desktops in the research lab at Organization X is suspected to have been accessed by someone unauthorized. Although they generally have only one user account per Desktop, there were multiple user accounts observed on this system. It is also suspected that the system was connected to some network drive, and a USB device was connected to the system. The triage data from the system was collected and placed on the attached VM. Can you help Organization X with finding answers to the below questions?
+
+**Note:** When loading registry hives in RegistryExplorer, it will caution us that the hives are dirty. This is nothing to be afraid of. We just need to remember the little lesson about transaction logs and point RegistryExplorer to the .LOG1 and .LOG2 files with the same filename as the registry hive. It will automatically integrate the transaction logs and create a 'clean' hive. Once we tell RegistryExplorer where to save the clean hive, we can use that for our analysis and we won't need to load the dirty hives anymore. RegistryExplorer will guide you through this process.   
+
+**Questions**
+
+How many user created accounts are present on the system? 
+
+- 3
+- From the desktop open the EZtools folder and then the RegistryExplorer folder and run the RegistryExplorer.exe
+- Load the SAM hive. Click File then Load Hive, navigate to Desktop -> Triage -> C -> Windows -> System32 -> Config -> Choose the SAM file. 
+-  Expand Root -> SAM -> Domains -> Account -> Click Users -> look for accounts starting with 10
+- `SAM\Domains\Account\Users`
+
+![](./Windows_Forensics/2023-05-15-08-26-58.png)
+
+What is the username of the account that has never been logged in?
+
+- thm-user2
+
+What's the password hint for the user THM-4n6?
+
+- count
+
+When was the file 'Changelog.txt' accessed?
+
+- 2021-11-24 18:18:48
+- Load the NTUSER hive fro THM-4n6. File -> Load Hive -> Desktop\triage\C\Users\THM-4n6 -> NTUSER.DAT -> load the logs
+- Navigate to `SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs`
+- Look for ChangeLog.txt
+
+![](./Windows_Forensics/2023-05-15-08-32-22.png)
+
+What is the complete path from where the python 3.8.2 installer was run? 
+
+- Z:\setup\python-3.8.2.exe
+- Navigate to `SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\UserAssist`
+- Expand UserAssist then expand each folder below it until you find the one with a Count
+- Click on the Count folder and look for the python install
+
+![](./Windows_Forensics/2023-05-15-08-35-37.png)
+
+![](./Windows_Forensics/2023-05-15-08-36-27.png)
+
+When was the USB device with the friendly name 'USB' last connected?
+
+- 2021-11-24 18:40:06
+- Load the SOFTWARE hive from `Desktop\triage\C\Windows\System32\config`
+- Navigate to `Microsoft\Windows Portable Devices\Devices\` and click each device to find the one with the correct friendly name. 
+- Use the Device ID to find more information in the SYSTEM hive
+- Load the SYSTEM hive from `Desktop\triage\C\Windows\System32\config`
+- Navigate to `ControlSet001\Enum\USBSTOR`
+- Find the answer 
+
+![](./Windows_Forensics/2023-05-15-08-47-20.png)
+
+![](./Windows_Forensics/2023-05-15-08-49-35.png)
+
+![](./Windows_Forensics/2023-05-15-08-52-48.png)
+
+
+# _**11: Conclusion**_
+
+Phew! Wasn't that interesting! 
+
+We have learned how to gather basic information about a computer and its users, identify which files they used, which programs they ran, and any external devices connected to the system.
+
+If it was a little harder for you to keep track of all the artifacts, download the [cheatsheet](./Windows_Forensics/WindowsForensicsCheatsheetTryHackMe.pdf) on this task.
+
+You can use the links provided within Task 3 to explore more about the tools we introduced. Furthermore, if you like, you can play around with KAPE, regripper, and EZtools in the VM attached with the room.
+
+You can learn more about Windows Forensics in our [Windows Forensics 2](http://tryhackme.com/room/windowsforensics2) room, where we cover even more exciting ways to perform forensics on a Windows machine, and the [KAPE room](https://tryhackme.com/room/kape) to understand how to perform forensics in a quick and efficient manner.
+
+
