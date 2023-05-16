@@ -202,3 +202,80 @@ What is the size of the cluster for the volume from which this triage was taken?
 
 
 # _**4: Recovering deleted files**_
+
+## **Deleted files and Data recovery:**
+
+Understanding the file systems makes it easier to know how files are deleted, recovered, and wiped. As we learned in the previous two tasks, a file system stores the location of a file on the disk in a table or a database. When we delete a file from the file system, the file system deletes the entries that store the file's location on the disk. For the file system, the location where the file existed is now available for writing or unallocated. However, the file contents on disk are still there, as long as they are not overwritten by the file system while copying another file or by the disk firmware while performing maintenance on the disk.
+
+Similarly, there is data on the disk in different unallocated clusters, which can possibly be recovered. To recover this data, we have to understand the file structure of different file types to identify the specific file through the data we see in a hex editor. However, we will not cover that in this room. What we will do, is to use a tool that does this work for us and identifies deleted files in a disk image file. But what is a disk image file?
+
+### Disk Image:
+
+A disk image file is a file that contains a bit-by-bit copy of a disk drive. A bit-by-bit copy saves all the data in a disk image file, including the metadata, in a single file. Thus, while performing forensics, one can make several copies of the physical evidence, i.e., the disk, and use them for investigation. This helps in two ways. 1) The original evidence is not contaminated while performing forensics, and 2) The disk image file can be copied to another disk and analyzed without using specialized hardware.
+
+### Recovering files using Autopsy
+
+With that out of the way, let's see how we can recover deleted files from a disk. We will use Autopsy for recovering deleted files. For a room dedicated to Autopsy, you can go [here](https://tryhackme.com/room/btautopsye0).
+
+On the attached VM, you will find an icon for Autopsy on the Desktop. Double-click it to run Autopsy. You will be greeted with the following screen:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/1efa320c87b2f2d564e60bf4c6ec6dc5.png)
+
+Click on the 'New Case' Option. You will find a window similar to the following:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/1411fbe2ad57d4cd474be027c72b3968.png)
+
+Enter a name to save your case by, and click Next.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/a60c87484f00a38ce9e5250cb3b85055.png)
+
+You can add the required details here. For now, we can click Finish to move forward. Autopsy will perform some processing and then show the following screen. Click Next to move forward.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/77d222f83d80c4682301a809fb98999f.png)
+
+You will see this screen. Since we will be performing analysis on a disk image, select the topmost option, Disk Image or VM File.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/83d738a83fc1dd47e49106508087fab7.png)
+
+It will ask you for the location of the data source.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/deb3837cf6fd3766b084cc4ecb006650.png)
+
+Provide the location of the data source. You will find a disk image named 'usb.001' on the Desktop. Provide the path to that file in the above window and click next. You will see the following window:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/99a0874ffec490f0468910cc2990ec2f.png)
+
+Here, click Deselect All. These are different modules that Autopsy runs on the data for processing. For this task, we don't need any of these. If enabled, they take a lot of time to run. Click Next after clicking Deselect All. Autopsy will load the disk image. You will see the following in the left panel.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/6aa98fadbab058ee3d760e520198d2f1.png)
+
+The Data Sources show the data sources that we have added to Autopsy. We can add more sources as well. The File Views and Tags menus show what Autopsy has found after processing the data. Expand the Data Sources, and click on the usb.001 device. Autopsy will show the contents of the disk image in the following way:
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/905832f92232c0e982fb84588d5fea1f.png)
+
+The contents of the disk are shown on the right side. All the files and folders present in the disk are listed in the upper tab. In the lower tab, details about the selected files are shown. There are different options to see the details here. You can check them out to find interesting information.
+
+Notice the X mark on the last file in the screenshot above, named New Microsoft Excel Worksheet.xlsx~RFcd07702.TMP. This indicates that this is a deleted file. Deleted files will have this X mark on them. To recover a deleted file, right-click on it, and select the Extract File(s) option. 
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/61306d87a330ed00419e22e7/room-content/14acd357e9c89b8ce8297b076ed43c02.png)
+
+Provide the path to save the extracted file, and you will have your deleted file recovered. Now let's see what other deleted files you can find on this disk image and answer the following questions.
+
+**Questions**
+
+There is another xlsx file that was deleted. What is the full name of that file?
+
+- TryHackme.xlsx
+
+What is the name of the TXT file that was deleted from the disk?
+
+- TryHackMe2.txt
+
+Recover the TXT file from Question #2. What was written in this txt file?
+
+- THM-4n6-2-4
+
+![](./Windows_Forensics/2023-05-16-13-59-30.png)
+
+# _**5: Evidence of Execution**_
+
