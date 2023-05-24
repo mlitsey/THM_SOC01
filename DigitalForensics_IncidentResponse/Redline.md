@@ -280,3 +280,361 @@ Provide the message the intruder left for you in the file.
 
 # _**5: IOC Search Collector**_
 
+We briefly discussed the usage of the **IOC Search Collector** in the **Data Collection** task.
+
+Let's take a closer look at the capabilities of this collector type. But first, let's recap what an IOC is.   
+
+IOC stands for **Indicators of Compromise**; they are artifacts of the potential compromise and host intrusion on the system or network that you need to look for when conducting threat hunting or performing incident response. IOCs can be MD5, SHA1, SHA256 hashes, IP address, C2 domain, file size, filename, file path, a registry key, etc.
+
+One of the great tools you can use is [IOC Editor,](https://fireeye.market/apps/S7cWpi9W) created by FireEye, to create IOC files. You can refer to this link to learn how to use the IOC Editor: [https://fireeye.market/assets/apps/S7cWpi9W//9cb9857f/ug-ioc-editor.pdf](https://fireeye.market/assets/apps/S7cWpi9W//9cb9857f/ug-ioc-editor.pdf). 
+
+**Note**: According to the [IOC Editor](https://fireeye.market/apps/S7cWpi9W) download page Windows 7 is the latest operating system officially supported. It is the same version installed in the attached VM. There is another tool called [OpenIOC Editor](https://fireeye.market/apps/211404) by FireEye, which supports Windows 10 that is worth taking a look at. 
+
+**Tip**: Before proceeding you can close Redline to free up some system resources while using IOC Editor. 
+
+You can create a text file containing IOCs, modify them, and share it with other people in the InfoSec industry.
+
+In this example, we will look at an IOC of a keylogger created with IOC Editor. 
+
+**Note**: Below, you may follow along with the screenshots and don't have to create the IOC file in this task. You will create an IOC file using IOC Editor and perform an IOC Search in the next task. 
+
+Open IOC Editor which was conveniently placed for you in the taskbar next to Redline. 
+
+  
+
+**Note:** It may take ~60 seconds for the application to launch. 
+
+Before proceeding,  create the directory which will store the IOC file (IOC Directory). 
+
+Next, create the IOC file.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/b26d9e80ac55821643531c3a0436f633.png)  
+
+**Keylogger indicators in IOC Editor**:
+
+![](https://i.ibb.co/02VS0M6/keylogger2.png)
+
+A brief explanation of the above image:  
+
+- The **Name** of the IOC file is Keylogger, Keylogger.ioc. (this field you can edit)
+- The **Author** is RussianPanda. (this field you can edit)
+- **GUID**, **Created**, and **Modified** are fields you can **NOT** edit, and IOC Editor populates the information.
+- Under **Description**, you can add a summary explaining the purpose of the IOC file.
+
+The actual IOCs will be added under, you guessed it, **Add**. 
+
+Here are the values from the image above:
+
+- **File Strings** - `psylog.exe`
+- **File Strings** - `RIDEV_INPUTSINK`
+- **File MD5** - `791ca706b285b9ae3192a33128e4ecbb`
+- **File Size** - `35400`
+
+Refer to the gif below to get an idea of adding specific IOCs to the IOC file.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/01db4361981d214c2692aa10d59961d1.gif)  
+
+Once you select an item you can enter the value for the item directly. 
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/81e9ffdb97a2ce98e8b9cec57a2be261.png)  
+
+You can also add it within the **Properties**. 
+
+  
+
+All the fields are read-only except for **Content** and **Comment**. To add a value to the item enter it under **Content**. 
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/5a0e549950f7ca673699d51a2ff14bc9.png)  
+
+Once you enter the value click Save to save it.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/9d95abf1f3d62f3fe7d2eb6352b86235.png)  
+
+**Note**: You can right-click on an item for additional options. See below.
+
+![](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de58e2bfac4a912bcc7a3e9/room-content/f5173beaf331e84b7672daf6be726092.png)  
+
+We'll leave that for you to explore on your own. 
+
+Now that we've created and saved the IOC file, let's move on and go back to the **IOC Search Collector** in the **Redline** tool.
+
+**Note**: If you closed Redline now is the time to relaunch the application. You can close IOC Editor, again, to free up system resources. 
+
+**IOC Search Collector** will ignore the data that doesn't match an IOC you have gathered. Although, you can always choose to collect additional data. As the Redline User Guide states, the quality of the IOC analysis will depend on the data you have available in the analysis session.
+
+![](https://i.ibb.co/SwvyRyq/ioc.png)
+
+To create an IOC Search Collector, click "Browse..." and choose the location of the .ioc file. Redline will automatically detect the .ioc file and place it in the Indicators section, as shown below.
+
+**IOC Search Collector**:  
+
+![](https://i.ibb.co/2S2t1sB/keylogger.png)  
+
+**Unsupported Search Terms:** These terms will not show any successful hits in Redline, which means Redline doesn't recognize specific search terms. 
+
+**Supported Search Terms:** The terms that Redline will recognize and search for.
+
+After you are finished reviewing the configured IOCs, click "Next". Now click on "Edit your script" to configure what data will be collected for the analysis. For this example, Keylogger file IOC Search, the following parameters were selected.   
+
+  
+
+![](https://i.ibb.co/g7JkhPr/keylogger3.png)  
+
+  
+
+**Note**: When you configure your own IOC Search, you will choose different settings for your script compared to the settings above. 
+
+  
+
+When done editing the script, click "OK". 
+
+  
+
+In the "Save Your Collector To" section, click "Browse" and choose an empty folder where your analysis file will be saved along with the **RunRedlineAudit.bat** file. 
+
+  
+
+After executing the .bat file in the same manner as before, let's now wait for the analysis to finish.
+
+  
+
+![](https://i.ibb.co/M24R8wV/clock.png)  
+
+  
+
+After the analysis is finished, you will see the .mans file (AnalysisSession1 in our example). Double-click the file to open it in Redline. 
+
+  
+
+![](https://i.ibb.co/xhJwX1f/analysis.png)  
+
+  
+
+If Redline fails to generate the IOC Report automatically, you can manually generate it by clicking "Create a New IOC Report" and importing your .ioc file.
+
+  
+
+When the report generation completes, you should see the "Hits". You can expand the list by clicking on the entries in each row.
+
+![](https://i.ibb.co/bvVVdj5/keyllogger4.png)
+
+  
+
+From the screenshot, you can see that there was one hit on "chrome.dll", this is a false positive. Let's review the details below. 
+
+  
+
+![](https://i.ibb.co/d0RCvdH/hits2.png)
+
+  
+
+As you can see, the DLL file matched with the string "RIDEV\_INPUTSINK" that we had in our .ioc file. It's important to gather granulated and accurate artifacts to add to your IOC file to avoid false positives. 
+
+  
+
+The screenshot below is of a file with the most amount of "Hits", which means it is most likely the file we are looking for.   
+
+  
+
+![](https://i.ibb.co/tzvyS6w/hits3.png)
+
+  
+
+You should be ready to answer the questions below using the screenshots provided in the task and perform these similar actions in the upcoming task!  
+
+**Questions**
+
+What is the actual filename of the Keylogger? 
+
+- psylog.exe
+
+What filename is the file masquerading as? 
+
+- THM1768.exe
+
+Who is the owner of the file? 
+
+- WIN-2DET5DP0NPT\charles
+
+What is the file size in bytes? 
+
+- 35400
+
+Provide the full path of where the .ioc file was placed after the Redline analysis, include the .ioc filename as well
+
+- C:\Users\charles\Desktop\Keylogger-IOCSearch\IOCs\keylogger.ioc
+
+
+
+# _**6: IOC Search Collector Analysis**_
+
+**Scenario**: You are assigned to do a threat hunting task at Osinski Inc. They believe there has been an intrusion, and the malicious actor was using the tool to perform the lateral movement attack, possibly a ["pass-the-hash" attack](https://secureteam.co.uk/articles/information-assurance/what-is-a-pass-the-hash-attack/).
+
+**Task**: Can you find the file planted on the victim's computer using IOC Editor and Redline IOC Search Collector? 
+
+So far, you only know the following artifacts for the file: 
+
+**File Strings:** 
+
+- 20210513173819Z0w0=
+- <?<L<T<g=
+
+**File Size (Bytes):** 
+
+- 834936
+
+**Note**: Open Previous Analysis, and use the existing Redline Session found in `C:\Users\Administrator\Documents\Analysis\Sessions\AnalysisSession1`.  
+
+**Questions**
+
+- Create the ioc file
+- Open IOC editor
+- save file to `C:\Users\Administrator\Documents\Analysis\Sessions\AnalysisSession1`
+- add name `pass-the-hash`
+- add file size
+
+![](./Redline/2023-05-24-07-11-40.png)
+![](./Redline/2023-05-24-07-12-37.png)
+
+- add 2 file strings with AND between 
+- click Item down arrow -> FileItem -> down arrow to bottom of list -> File Strings
+
+![](./Redline/2023-05-24-07-13-57.png)
+![](./Redline/2023-05-24-07-15-58.png)
+
+- Save the file and then open the Redline file. 
+- Once the file is fully loaded click the IOC Reports tab in the bottom left
+- Click create a new IOC Report
+- browse to the ioc file and the name will populate in the Indicators pane
+- click ok
+- it will take a while for this to load
+
+![](./Redline/2023-05-24-07-23-44.png)
+![](./Redline/2023-05-24-07-26-09.png)
+![](./Redline/2023-05-24-07-27-34.png)
+![](./Redline/2023-05-24-07-36-09.png)
+![](./Redline/2023-05-24-07-38-41.png)
+
+Provide the path of the file that matched all the artifacts along with the filename.
+
+- `C:\Users\Administrator\AppData\Local\Temp\8eJv8w2id6IqN85dfC.exe`
+
+Provide the path where the file is located without including the filename.
+
+- `C:\Users\Administrator\AppData\Local\Temp\`
+
+Who is the owner of the file?
+
+- BUILTIN\Administrators
+
+Provide the subsystem for the file.
+
+- Windows_CUI
+
+Provide the Device Path where the file is located.
+
+- \Device\HarddiskVolume2
+
+Provide the hash (SHA-256) for the file.
+
+- open power shell and run this command
+- `Get-FileHash C:\Users\Administrator\AppData\Local\Temp\8eJv8w2id6IqN85dfC.exe`
+- 57492D33B7C0755BB411B22D2DFDFDF088CBBFCD010E30DD8D425D5FE66ADFF4
+
+![](./Redline/2023-05-24-07-42-47.png)
+
+The attacker managed to masquerade the real filename. Can you find it having the hash in your arsenal? 
+
+- Search hash on [VirusTotal](https://www.virustotal.com/gui/file/57492d33b7c0755bb411b22d2dfdfdf088cbbfcd010e30dd8d425d5fe66adff4/details)
+- psexec.exe
+
+![](./Redline/2023-05-24-07-49-22.png)
+
+
+
+# _**7: Endpoint Investigation**_
+
+**Scenario**: A Senior Accountant, Charles, is complaining that he cannot access the spreadsheets and other files he has been working on. He also mentioned that his wallpaper got changed with the saying that his files got encrypted. This is not good news!
+
+Are you ready to perform the memory analysis of the compromised host? You have all the data you need to do some investigation on the victim's machine. Let's go hunting!  
+
+**Task**:
+
+1. Navigate to the folder on your desktop titled Endpoint Investigation.
+2. Double-click on the _AnalysisSession1.mans_ file. The data will be imported automatically into Redline.
+3. Analyze the file to answer the questions below.
+
+**Note**: Give it up to 10 minutes for all the data import. 
+
+**Questions**
+
+Can you identify the product name of the machine?
+
+- Windows 7 Home Basic
+
+![](./Redline/2023-05-24-08-23-43.png)
+
+Can you find the name of the note left on the Desktop for the "Charles"?
+
+- go to Processes and search for notepad
+- copy the line and then paste it in notepad so you can copy the filename out
+- `_R_E_A_D___T_H_I_S___AJYG1O_.txt`
+
+![](./Redline/2023-05-24-08-26-04.png)
+
+Find the Windows Defender service; what is the name of its service DLL? 
+
+- go to Windows Services and search for defender then scroll to the right to see the Service DLL
+- MpSvc.dll
+
+![](./Redline/2023-05-24-08-28-49.png)
+
+The user manually downloaded a zip file from the web. Can you find the filename? 
+
+- go to File Download History and search for zip or filter on Manual in Download Type
+- eb5489216d4361f9e3650e6a6332f7ee21b0bc9f3f3a4018c69733949be1d481.zip
+
+![](./Redline/2023-05-24-08-32-25.png)
+
+Provide the filename of the malicious executable that got dropped on the user's Desktop.
+
+- Click on File System then drill down to the users desktop and check the box
+- Endermanch@Cerber5.exe
+
+![](./Redline/2023-05-24-08-39-30.png)
+
+Provide the MD5 hash for the dropped malicious executable.
+
+- Scroll to the right to see the MD5 hash
+- fe1bc60a95b2c2d77cd5d232296a7fa4
+
+![](./Redline/2023-05-24-08-42-42.png)
+
+What is the name of the ransomware? 
+
+- look up hash on [VirusTotal](https://www.virustotal.com/gui/file/b3e1e9d97d74c416c2a30dd11858789af5554cf2de62f577c13944a19623777d/detection)
+
+- Cerber
+
+
+![](./Redline/2023-05-24-08-47-24.png)
+
+
+# _**8: Conclusion**_
+
+As you have seen, Redline is a powerful tool that can guide you through analyzing the compromised host. You also need to consider that the accuracy of the analysis will depend on what kind of data you want to collect. 
+
+Remember, Redline collects various data for analysis, including running processes, services, files, registry structures, event logs, etc.   
+
+While solving the room tasks, you might have noticed that **Timeline** can be useful when searching for specific keywords. The **Timeline** can give you an idea of when the attack started and what following actions the attacker took.   
+
+Here is the reference list for you if you missed it in the previous tasks:
+
+- Redline User Guide: [https://fireeye.market/assets/apps/211364/documents/877936\_en.pdf](https://fireeye.market/assets/apps/211364/documents/877936_en.pdf)[](https://www.fireeye.com/content/dam/fireeye-www/services/freeware/ug-redline.pdf)
+- IOC Editor User Guide: [https://fireeye.market/assets/apps/S7cWpi9W//9cb9857f/ug-ioc-editor.pdf](https://fireeye.market/assets/apps/S7cWpi9W//9cb9857f/ug-ioc-editor.pdf)
+
+Congratulations! Now you have learned a new tool. If you would like to challenge yourself, we recommend the [REvil Corp](https://tryhackme.com/room/revilcorp) room next. 
+
+Happy Hunting!
+
+
