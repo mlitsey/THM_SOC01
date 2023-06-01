@@ -458,24 +458,45 @@ Two USB Mass Storage devices were attached to this Virtual Machine. One had a Se
 
 7zip, Google Chrome and Mozilla Firefox were installed from a Network drive location on the Virtual Machine. What was the drive letter and path of the directory from where these software were installed?
 
-- 
+- Look under the Module/fileFolderAccess location and open the AutomaticDestinations file
+- Only see 2 other mapped drives and one is setups
+- Z:\setups
+
+![](./KAPE/2023-06-01-08-32-38.png)
 
 What is the execution date and time of CHROMESETUP.EXE in MM/DD/YYYY HH:MM?
 
-- 
+- Look under Module/Registry for the RecentApps file
+- Under AppId look for Chromesetup and the LastAccessed column
+- 11/25/2021 3:33
+
+![](./KAPE/2023-06-01-08-35-56.png)
 
 What search query was run on the system?
 
-- 
+- Looking under Registry again I didn't find a typed paths file but did find a WordWheelQuery
+- RunWallpaperSetup.cmd
+
+![](./KAPE/2023-06-01-08-41-32.png)
 
 When was the network named Network 3 First connected to?
 
-- 
+- Under Registry look for KnownNetworks
+- 11/30/2021 15:44
+
+![](./KAPE/2023-06-01-08-45-29.png)
 
 KAPE was copied from a removable drive. Can you find out what was the drive letter of the drive where KAPE was copied from?
 
-- 
+- Saw this before under AutomaticDestinations
+- E:
 
 
 
-# 8:
+# _**8: Conclusion**_
+
+Phew! Windows Forensics keeps on getting interesting. 
+
+You can stick around and find out what other exciting artifacts you found in the VM. You can let us know what you found interesting in this room using our [Discord channel](https://discord.gg/tryhackme) or [Twitter account](http://twitter.com/realtryhackme).
+
+Furthermore, you can try running KAPE on your machine and see what information you can find.
