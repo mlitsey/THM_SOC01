@@ -135,3 +135,57 @@ Syntax: `python3 vol.py -f <file> windows.info`
 
 # _**7: Listing Processes and Connections**_
 
+Five different plugins within Volatility allow you to dump processes and network connections, each with varying techniques used. In this task, we will be discussing each and its pros and cons when it comes to evasion techniques used by adversaries.
+
+The most basic way of listing processes is using `pslist`; this plugin will get the list of processes from the doubly-linked list that keeps track of processes in memory, equivalent to the process list in task manager. The output from this plugin will include all current processes and terminated processes with their exit times.
+
+Syntax: `python3 vol.py -f <file> windows.pslist`
+
+![](./Volatility/2023-07-17-07-12-56.png)
+
+Some malware, typically rootkits, will, in an attempt to hide their processes, unlink itself from the list. By unlinking themselves from the list you will no longer see their processes when using `pslist`. To combat this evasion technique, we can use `psscan`;this technique of listing processes will locate processes by finding data structures that match `_EPROCESS`. While this technique can help with evasion countermeasures, it can also cause false positives.
+
+Syntax: `python3 vol.py -f <file> windows.psscan`
+
+![](./Volatility/2023-07-17-07-14-29.png)
+
+The third process plugin, `pstree`, does not offer any other kind of special techniques to help identify evasion like the last two plugins; however, this plugin will list all processes based on their parent process ID, using the same methods as `pslist`. This can be useful for an analyst to get a full story of the processes and what may have been occurring at the time of extraction.
+
+Syntax: `python3 vol.py -f <file> windows.pstree`
+
+![](./Volatility/2023-07-17-07-15-18.png)
+
+Now that we know how to identify processes, we also need to have a way to identify the network connections present at the time of extraction on the host machine. `netstat` will attempt to identify all memory structures with a network connection.
+
+Syntax: `python3 vol.py -f <file> windows.netstat`
+
+This command in the current state of volatility3 can be very unstable, particularly around old Windows builds. To combat this, you can utilize other tools like bulk\_extractor to extract a PCAP file from the memory file. In some cases, this is preferred in network connections that you cannot identify from Volatility alone. [https://tools.kali.org/forensics/bulk-extractor](https://tools.kali.org/forensics/bulk-extractor)
+
+The last plugin we will cover is `dlllist`. This plugin will list all DLLs associated with processes at the time of extraction. This can be especially useful once you have done further analysis and can filter output to a specific DLL that might be an indicator for a specific type of malware you believe to be present on the system.
+
+Syntax: `python3 vol.py -f <file> windows.dlllist`
+
+![](./Volatility/2023-07-17-07-16-31.png)
+
+
+# _**8: Volatility Hunting and Detection Capabilities**_
+
+Volatility offers a plethora of plugins that can be used to aid in your hunting and detection capabilities when hunting for malware or other anomalies within a system's memory.
+
+It is recommended that you have a basic understanding of how evasion techniques and various malware techniques are employed by adversaries, as well as how to hunt and detect them before going through this section.
+
+The first plugin we will be talking about that is one of the most useful when hunting for code injection is `malfind`. This plugin will attempt to identify injected processes and their PIDs along with the offset address and a Hex, Ascii, and Disassembly view of the infected area. The plugin works by scanning the heap and identifying processes that have the executable bit set `RWE or RX` and/or no memory-mapped file on disk (file-less malware).
+
+Based on what `malfind` identifies, the injected area will change. An MZ header is an indicator of a Windows executable file. The injected area could also be directed towards shellcode which requires further analysis.
+
+Syntax: `python3 vol.py -f <file> windows.malfind`
+
+![](./Volatility/2023-07-17-07-19-04.png)
+
+Volatility also offers the capability to compare the memory file against YARA rules. `yarascan` will search for strings, patterns, and compound rules against a rule set. You can either use a YARA file as an argument or list rules within the command line.
+
+Syntax: `python3 vol.py -f <file> windows.yarascan`
+
+There are other plugins that can be considered part of Volatility's hunting and detection capabilities; however, we will be covering them in the next task.
+
+# 9: 
