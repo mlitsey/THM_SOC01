@@ -188,4 +188,140 @@ Syntax: `python3 vol.py -f <file> windows.yarascan`
 
 There are other plugins that can be considered part of Volatility's hunting and detection capabilities; however, we will be covering them in the next task.
 
-# 9: 
+# _**9: Advanced Memory Forensics**_
+
+Advanced Memory Forensics can become confusing when you begin talking about system objects and how malware interacts directly with the system, especially if you do not have prior experience hunting some of the techniques used such as hooking and driver manipulation. When dealing with an advanced adversary, you may encounter malware, most of the time rootkits that will employ very nasty evasion measures that will require you as an analyst to dive into the drivers, mutexes, and hooked functions. A number of modules can help us in this journey to further uncover malware hiding within memory.
+
+The first evasion technique we will be hunting is hooking; there are five methods of hooking employed by adversaries, outlined below:
+
+- SSDT Hooks
+- IRP Hooks
+- IAT Hooks
+- EAT Hooks
+- Inline Hooks
+
+We will only be focusing on hunting SSDT hooking as this is one of the most common techniques when dealing with malware evasion and the easiest plugin to use with the base volatility plugins.
+
+The `ssdt` plugin will search for hooking and output its results. Hooking can be used by legitimate applications, so it is up to you as the analyst to identify what is evil. As a brief overview of what SSDT hooking is: `SSDT` stands for _System Service Descriptor Table;_ the Windows kernel uses this table to look up system functions. An adversary can hook into this table and modify pointers to point to a location the rootkit controls.
+
+There can be hundreds of table entries that `ssdt` will dump; you will then have to analyze the output further or compare against a baseline. A suggestion is to use this plugin after investigating the initial compromise and working off it as part of your lead investigation.
+
+Syntax: `python3 vol.py -f <file> windows.ssdt` 
+
+![](./Volatility/2023-07-24-07-00-12.png)
+![](./Volatility/2023-07-24-07-01-26.png)
+
+Adversaries will also use malicious driver files as part of their evasion. Volatility offers two plugins to list drivers.
+
+The `modules` plugin will dump a list of loaded kernel modules; this can be useful in identifying active malware. However, if a malicious file is idly waiting or hidden, this plugin may miss it.
+
+This plugin is best used once you have further investigated and found potential indicators to use as input for searching and filtering.
+
+Syntax: `python3 vol.py -f <file> windows.modules`
+
+![](./Volatility/2023-07-24-07-02-37.png)
+
+The `driverscan` plugin will scan for drivers present on the system at the time of extraction. This plugin can help to identify driver files in the kernel that the `modules` plugin might have missed or were hidden.
+
+As with the last plugin, it is again recommended to have a prior investigation before moving on to this plugin. It is also recommended to look through the `modules` plugin before `driverscan`.
+
+Syntax: `python3 vol.py -f <file> windows.driverscan`
+
+In most cases, `driverscan` will come up with no output; however, if you do not find anything with the `modules` plugin, it can be useful to attempt using this plugin.
+
+There are also other plugins listed below that can be helpful when attempting to hunt for advanced malware in memory.
+
+- `modscan`
+- `driverirp`
+- `callbacks`
+- `idt`
+- `apihooks`
+- `moddump`
+- `handles`
+
+Note: Some of these are only present on Volatility2 or are part of third-party plugins. To get the most out of Volatility, you may need to move to some third-party or custom plugins.
+
+
+# _**10: Practical Investigations**_
+
+### Case 001 - BOB! THIS ISN'T A HORSE!
+
+Your SOC has informed you that they have gathered a memory dump from a quarantined endpoint thought to have been compromised by a banking trojan masquerading as an Adobe document. Your job is to use your knowledge of threat intelligence and reverse engineering to perform memory forensics on the infected host. 
+
+You have been informed of a suspicious IP in connection to the file that could be helpful. `41.168.5.140`
+
+The memory file is located in `/Scenarios/Investigations/Investigation-1.vmem` 
+
+### Case 002 - That Kind of Hurt my Feelings
+
+You have been informed that your corporation has been hit with a chain of ransomware that has been hitting corporations internationally. Your team has already retrieved the decryption key and recovered from the attack. Still, your job is to perform post-incident analysis and identify what actors were at play and what occurred on your systems. You have been provided with a raw memory dump from your team to begin your analysis.
+
+The memory file is located in `/Scenarios/Investigations/Investigation-2.raw`
+
+**Questions**
+
+What is the build version of the host machine in Case 001?
+
+- 
+
+At what time was the memory file acquired in Case 001?
+
+- 
+
+What process can be considered suspicious in Case 001?
+Note: Certain special characters may not be visible on the provided VM. When doing a copy-and-paste, it will still copy all characters.
+
+- 
+
+What is the parent process of the suspicious process in Case 001?
+
+-
+
+What is the PID of the suspicious process in Case 001?
+
+- 
+
+What is the parent process PID in Case 001?
+
+- 
+
+What user-agent was employed by the adversary in Case 001?
+
+- 
+
+Was Chase Bank one of the suspicious bank domains found in Case 001? (Y/N)
+
+- 
+
+What suspicious process is running at PID 740 in Case 002?
+
+- 
+
+What is the full path of the suspicious binary in PID 740 in Case 002?
+
+- 
+
+What is the parent process of PID 740 in Case 002?
+
+- 
+
+What is the suspicious parent process PID connected to the decryptor in Case 002?
+
+- 
+
+From our current information, what malware is present on the system in Case 002?
+
+- 
+
+What DLL is loaded by the decryptor used for socket creation in Case 002?
+
+- 
+
+What mutex can be found that is a known indicator of the malware in question in Case 002?
+
+- 
+
+What plugin could be used to identify all files loaded from the malware working directory in Case 002?
+
+- 
+
