@@ -262,66 +262,106 @@ The memory file is located in `/Scenarios/Investigations/Investigation-2.raw`
 
 What is the build version of the host machine in Case 001?
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-1.vmem windows.info`
+- 2600.xpsp.080413-2111
+
+![](./Volatility/2023-07-28-11-15-56.png)
 
 At what time was the memory file acquired in Case 001?
 
-- 
+- 2012-07-22 02:45:08
 
 What process can be considered suspicious in Case 001?
 Note: Certain special characters may not be visible on the provided VM. When doing a copy-and-paste, it will still copy all characters.
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-1.vmem windows.psscan`
+- reader_sl.exe
+
+![](./Volatility/2023-07-28-11-20-03.png)
 
 What is the parent process of the suspicious process in Case 001?
 
--
+- explorer.exe
 
 What is the PID of the suspicious process in Case 001?
 
-- 
+- 1640
 
 What is the parent process PID in Case 001?
 
-- 
+- 1484
 
 What user-agent was employed by the adversary in Case 001?
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-1.vmem -o ~/ windows.memmap.Memmap --pid 1640 --dump`
+- `ll ~`
+- `strings ~/pid.1640.dmp |grep -i "user-agent"`
+- Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; en-US)
+
+![](./Volatility/2023-07-28-11-27-25.png)
 
 Was Chase Bank one of the suspicious bank domains found in Case 001? (Y/N)
 
-- 
+- `strings ~/pid.1640.dmp |grep -i "chase"`
+- Y
+
+![](./Volatility/2023-07-28-11-29-42.png)
 
 What suspicious process is running at PID 740 in Case 002?
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-2.raw windows.psscan`
+- @WanaDecryptor@
+
+![](./Volatility/2023-07-28-11-32-04.png)
 
 What is the full path of the suspicious binary in PID 740 in Case 002?
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-2.raw windows.dlllist |grep 740`
+- C:\Intel\ivecuqmanpnirkt615\@WanaDecryptor@.exe
+
+![](./Volatility/2023-07-28-11-34-00.png)
 
 What is the parent process of PID 740 in Case 002?
 
-- 
+- tasksche.exe
 
 What is the suspicious parent process PID connected to the decryptor in Case 002?
 
-- 
+- 1940
 
 From our current information, what malware is present on the system in Case 002?
 
-- 
+- WannaCry
 
 What DLL is loaded by the decryptor used for socket creation in Case 002?
 
-- 
+- [Link](https://medium.com/@codingkarma/wannacry-analysis-and-cracking-6175b8cd47d4)
+- Ws2_32.dll
 
 What mutex can be found that is a known indicator of the malware in question in Case 002?
 
-- 
+- `python3 /opt/volatility3/vol.py -f Investigation-2.raw windows.handles |grep 1940`
+- MsWinZonesCacheCounterMutexA
+- can be found in above article also
+
+![](./Volatility/2023-07-28-11-53-18.png)
 
 What plugin could be used to identify all files loaded from the malware working directory in Case 002?
 
-- 
+- windows.filescan
+- [Link](https://volatility3.readthedocs.io/en/latest/volatility3.plugins.windows.filescan.html)
+
+
+# _**11: Conclusion**_
+
+We have only covered a very thin layer of memory forensics that can go much deeper when analyzing the Windows, Mac, and Linux architecture. If you're looking for a deep dive into memory forensics, I would suggest reading: The Art of Memory Forensics.
+
+There are also a number of wikis and various community resources that can be used for more information about Volatility techniques found below.
+
+- [](https://github.com/volatilityfoundation/volatility/wiki)[https://github.com/volatilityfoundation/volatility/wiki](https://github.com/volatilityfoundation/volatility/wiki)
+- [](https://github.com/volatilityfoundation/volatility/wiki/Volatility-Documentation-Projec)[https://github.com/volatilityfoundation/volatility/wiki/Volatility-Documentation-Projec](https://github.com/volatilityfoundation/volatility/wiki/Volatility-Documentation-Projec)
+- [](https://digital-forensics.sans.org/media/Poster-2015-Memory-Forensics.pdf)[https://digital-forensics.sans.org/media/Poster-2015-Memory-Forensics.pdf](https://digital-forensics.sans.org/media/Poster-2015-Memory-Forensics.pdf)
+- [](https://eforensicsmag.com/finding-advanced-malware-using-volatility/)[https://eforensicsmag.com/finding-advanced-malware-using-volatility/](https://eforensicsmag.com/finding-advanced-malware-using-volatility/)
+
+From this room, as you continue on the SOC Level 1 path, more rooms will contain memory forensics challenges.
 
