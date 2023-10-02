@@ -385,20 +385,189 @@ When any folder is clicked  in the left pane, additional details are displayed 
 
 Which accessor can access hidden NTFS files and Alternate Data Streams? (**format: xyz accessor)**
 
-- 
+- ntfs accessor
 
 Which accessor provides file-like access to the registry? (format: xyz accessor)
 
-- 
+- registry accessor
 
 What is the name of the file in $Recycle.Bin?
 
-- 
+- from Home click show all then click on the servername
+- click on VFS icon then click on the recursive refresh and wait for it to load everything
+- click file -> C: -> $Recycle.Bin -> directory -> desktop.ini
+- dekstop.ini
+
+![](./Velociraptor/2023-10-02-07-55-31.png)
 
 There is hidden text in a file located in the Admin's Documents folder. What is the flag?
 
+- click on ntfs then click on recursive refresh and wiat for it to load everything
+- C:\Users\Administrator\Documents\
+- THM{VkVMT0NJUkFQVE9S}
+
+
+
+# 6: VQL (Velociraptor Query Language)
+
+**Velociraptor Query Language**
+
+Per the official [documentation](https://docs.velociraptor.app/docs/overview/#vql---the-velociraptor-difference), "_Velociraptor’s power and flexibility comes from the Velociraptor Query Language (VQL). VQL is a framework for creating highly customized artifacts, which allow you to collect, query, and monitor almost any aspect of an endpoint, groups of endpoints, or an entire network. It can also be used to create continuous monitoring rules on the endpoint, as well as automate tasks on the server_".
+
+With many tools that you will encounter in your SOC career, some tools may have their own query language. For example, in Splunk its SPL ([Search Processing Language](https://docs.splunk.com/Splexicon:SPL#:~:text=abbreviation,functions%2C%20arguments%2C%20and%20clauses.)), Elastic has KQL ([Kibana Query Language](https://www.elastic.co/guide/en/kibana/current/kuery-query.html)), Microsoft Sentinel has KQL \[too\] ([Kusto Query Language](https://docs.microsoft.com/en-us/azure/sentinel/kusto-overview)), etc. 
+
+VQL is the meat and potatoes of Velociraptor. Throughout each task thus far, unbeknownst to you, you have been interacting with VQL. 
+
+To jog your memory, navigate back to **Collected** and inspect **Generic.Client.Info**. Click the Requests tab in the bottom pane. See below image.
+
+![VQL](https://assets.tryhackme.com/additional/velociraptor/vql-example.png)  
+
+If you are familiar with SQL (Structured Query Language) then you should notice the similarities, for example: **SELECT**, **FROM**, and **WHERE**.  
+
+To execute a simple VQL on your own, first create a **[Notebook](https://docs.velociraptor.app/docs/vql/notebooks)**. 
+
+Navigate to the Notebooks tab. In Velociraptor, Notebooks are _containers_ that we can use to execute our queries and commands, as demonstrated below. 
+
+![notebooks](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/a107fe7d78711c90b9c31f5584e4c281.gif)
+
+Notebooks consist of two languages - **[Markdown](https://www.markdownguide.org/getting-started/)** and (of course) **VQL**. If you are familiar with [Jupyter Notebooks](https://jupyter.org/) they function in a very similar fashion!  
+
+Let's create our first notebook and enter some simple markdown. We'll circle back to VQL shortly.   
+
+![edit notebook](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/d2879fb5600bbe69f4b2d3e67e8de2ef.gif)
+
+Sweet! Now let's set our notebook to use VQL instead & query basic information from the current agent, we can use `SELECT * FROM info()`
+
+**Note**: Click into the lower box to display the options for this, then select the pencil to edit.  
+
+![change from markdown](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/f01b684ac748c4484a4949adfae0ba89.png)
+
+Let's save this notebook and run it against the agent as demonstrated below.  
+
+![change to VQL](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/f12b007342f3041b129d70edd408c2bf.gif)
+
+VQL can also be run via the command line. See the example below.  
+
+For this example, VQL is run from the command line querying an agent for details such as its hostname.
+
+`velociraptor.exe -v query "SELECT * FROM info()"`
+
+![VQL via CMD](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/646326ad4c3925702619529657e3ee36.gif)
+
+## Artifacts
+
+Before wrapping up this task, let's touch on **Artifacts** (or VQL Modules). 
+
+Per the [documentation](https://docs.velociraptor.app/docs/vql/artifacts/), "_Velociraptor allows packaging VQL queries inside mini-programs called Artifacts. An artifact is simply a structured YAML file containing a query, with a name attached to it. This allows Velociraptor users to search for the query by name or description and simply run the query on the endpoint without necessarily needing to understand or type the query into the UI_". 
+
+This was a **BRIEF** intro to VQL. It is recommended to review the official [documentation](https://docs.velociraptor.app/docs/vql/) thoroughly to fully understand it and how you can wield its power to execute advanced queries. Also, reference the [VQL Reference](https://docs.velociraptor.app/vql_reference/) and [Extending VQL](https://docs.velociraptor.app/docs/extending_vql/) for further information on VQL. 
+
+### _**Answer the questions below**_
+
+What is followed after the **SELECT** keyword in a standard VQL query?
+
+- Column Selectors
+- from the [documentation](https://docs.velociraptor.app/docs/vql/)
+
+What goes after the FROM  keyword?
+
+- VQL Plugin
+
+What is followed by the WHERE keyword?
+
+- filter expression
+
+What can you type in the Notepad interface to view a list of possible completions for a keyword?
+
+- ?
+
+What plugin would you use to run PowerShell code from Velociraptor?
+
+- execve()
+- from the [Extending VQL](https://docs.velociraptor.app/docs/extending_vql/) page
+
+
+
+## _**7: Forensic Analysis VQL Plugins**_
+
+**Forensic Analysis**
+
+Per the [documentation](https://docs.velociraptor.app/docs/forensic/), "_VQL is not useful without a good set of plugins that make DFIR work possible. Velociraptor’s strength lies in the wide array of VQL plugins and functions that are geared towards making DFIR investigations and detections effective_".
+
+There is a lot of information to cover here regarding VQL plugins. This task aims to give you enough information regarding these plugins so you can construct your VQL query to hunt for artifacts of a popular exploit known as Printnightmare. 
+
+At the date of the entry of this content, below are the categories surrounding forensic analysis:
+
+- **Searching Filenames**
+- **Searching Content**
+- **NTFS Analysis**
+- **Binary Parsing**
+- **Evidence of Execution**
+- **Event Logs**
+- **Volatile Machine State**
+
+Have a skim through **Searching Filenames** and **NTFS Analysis** to provide a solid brain dump to prep you for the questions below and for the next task. 
+
+### _**Answer the questions below**_
+
+What are the arguments for **parse\_mft()**?
+
+- parse_mft(filename="C:/$MFT", accessor="ntfs")
+- from the [documentation](https://docs.velociraptor.app/docs/forensic/ntfs/)
+
+What filter expression will ensure that no directories are returned in the results?
+
+- IsDir
+
+
+
+## _**8: Hunt for a nightmare**_
+
+**Hunt for a nightmare**
+
+Terminate the previous virtual machine and spawn the virtual machine attached to this task. 
+
+![A picture highlighting the blue ](https://assets.tryhackme.com/additional/velociraptor/split-view-2.png)  
+
+**Objective**: Use Velociraptor to create an artifact to detect the [PrintNightmare](https://msrc.microsoft.com/update-guide/vulnerability/cve-2021-34527) vulnerability!
+
+Luckily there is an artifact entry in the [Artifact Exchange](https://docs.velociraptor.app/exchange/). To avoid just copy/pasting the artifact, you will need to construct a very simple VQL query. 
+
+Below are steps to construct your VQL query to find the DLL: 
+
+- The **Select** clause, the column accessors should be **fullpath** (concatenate **C:/** to the **fullpath** column accessor) and **filename**. 
+- Make sure the column headers for each column accessor are renamed. **Fullpath** should be **Full\_Path**, and for **filename** it should be **File\_Name**.
+- Use **parse\_pe()** to ensure only **PE** files are returned. (Check the [VQL Reference](https://docs.velociraptor.app/vql_reference/)) 
+- Make sure the column header for this plugin should be renamed to PE. 
+- The **From** clause should use **parse\_mft()**.
+- The **Where** clause should not return any directories, only return binaries (PE files) and search the directory where this malicious DLL will most likely be found.
+
+The skeleton query below should help you answer the questions below.
+
+**Skeleton Query:**
+
+- SELECT "C:/" + FullPath AS \*\*\*\*\*\*\*\*\*,FileName AS \*\*\*\*\*\*\*\*\*,parse\_pe(file="C:/" + FullPath) AS \*\*
+- FROM parse\_mft(filename="C:/$\*\*\*", accessor="\*\*\*\*")
+- WHERE \*\*\* IsDir 
+- AND FullPath =~ "Windows/System32/spool/drivers" 
+- AND \*\*
+
+**Note**: You will need to start Velociraptor in "_Instant Velociraptor_" mode. The instructions to do so can be found [here](https://docs.velociraptor.app/docs/deployment/#instant-velociraptor). The virtual machine attached to this task is running Velociraptor version **0.6.2**.  
+
+## _**Answer the questions below**_
+
+What is the name in the Artifact Exchange to detect Printnightmare?
+
 - 
 
+Per the above instructions, what is your Select clause? (no spaces after commas)
 
+- 
 
-# 6: 
+What is the name of the DLL that was  placed by the attacker?
+
+- 
+
+What is the PDB entry?
+
+- 
