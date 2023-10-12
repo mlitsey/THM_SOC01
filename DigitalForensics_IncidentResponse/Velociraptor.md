@@ -552,22 +552,48 @@ The skeleton query below should help you answer the questions below.
 - AND FullPath =~ "Windows/System32/spool/drivers" 
 - AND \*\*
 
-**Note**: You will need to start Velociraptor in "_Instant Velociraptor_" mode. The instructions to do so can be found [here](https://docs.velociraptor.app/docs/deployment/#instant-velociraptor). The virtual machine attached to this task is running Velociraptor version **0.6.2**.  
+**Note**: You will need to start Velociraptor in "_Instant Velociraptor_" mode. `Velociraptor.exe gui`. The instructions to do so can be found [here](https://docs.velociraptor.app/docs/deployment/#instant-velociraptor). The virtual machine attached to this task is running Velociraptor version **0.6.2**.  
 
 ## _**Answer the questions below**_
 
 What is the name in the Artifact Exchange to detect Printnightmare?
 
-- 
+- Windows.Detection.PrintNightmare
+- [Link](https://docs.velociraptor.app/exchange/artifacts/pages/printnightmare/)
 
 Per the above instructions, what is your Select clause? (no spaces after commas)
 
-- 
+- `SELECT "C:/" + FullPath AS Full_Path, FileName AS File_Name,parse_pe(file="C:/" + FullPath) AS PE`
 
-What is the name of the DLL that was  placed by the attacker?
+What is the name of the DLL that was placed by the attacker?
 
-- 
+- nightmare.dll
+
+![](./Velociraptor/2023-10-12-10-53-25.png)
+
+```
+SELECT "C:/" + FullPath AS Full_Path, FileName AS File_Name,parse_pe(file="C:/" + FullPath) AS PE
+From parse_mft(filename="C:/$MFT", accessor="ntfs")
+where NOT IsDir
+AND FullPath =~"Windows/System32/spool/drivers"
+AND PE
+```
 
 What is the PDB entry?
 
-- 
+- C:\Users\caleb\source\repos\nightmare\x64\Release\nightmare.pdb
+
+
+
+# _**9: Conclusion**_
+
+You made it to the end. I hope you enjoyed this brief tour and exposure to this fascinating tool called Velociraptor. Remember that this tool was acquired by Rapid7, so they will continue to make this tool better, and just like Metasploit, there will most likely be a commercial version of Velociraptor coming soon. So you may see this in the commercial space more and more. 
+
+Look forward to future rooms to practice hunting with Velociraptor. 
+
+Additional Resources:
+
+- [https://docs.velociraptor.app/training/](https://docs.velociraptor.app/training/)
+- [https://docs.velociraptor.app/blog/](https://docs.velociraptor.app/blog/)
+- [https://docs.velociraptor.app/presentations/](https://docs.velociraptor.app/presentations/)
+
