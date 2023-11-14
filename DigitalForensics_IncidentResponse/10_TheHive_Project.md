@@ -189,12 +189,24 @@ New Observables Window
 
 Where are the TTPs imported from?
 
-- 
+- MITRE ATT&CK
 
 According to the Framework, what type of Detection "Data source" would our investigation be classified under?
 
-- 
+- Network Traffic
 
 Upload the pcap file as an observable. What is the flag obtained from https://MACHINE_IP//files/flag.html
 
-- 
+- THM{FILES_ARE_OBSERVABLERS}
+
+
+
+
+# 6: Room Conclusion
+
+We have now reached the end of TheHive Project room.
+
+This room has hopefully given you a good grasp of how incident response and management is performed using TheHive and give you a working knowledge of the tool.
+
+You are advised to experiment with these foundations until you are completely comfortable with them and to open up to more experiments with the mentioned integrations and others.
+
